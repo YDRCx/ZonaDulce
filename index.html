@@ -407,6 +407,12 @@
             return Number(Math.round(num + "e2") + "e-2");
         }
 
+        function checkIsCoffee(item) {
+            if (item.isCoffee) return true;
+            const str = (item.id + " " + item.name + " " + (item.category || "")).toLowerCase();
+            return str.includes('caf') || str.includes('coffee');
+        }
+
         function loadItems() {
             const saved = localStorage.getItem('app_items_config');
             if (saved) {
@@ -519,7 +525,6 @@
             let itemsLines = '';
             let hasSales = false;
 
-            // Variables para unificación de cafés
             let coffeeTotalQty = 0;
             let coffeeTotalBs = 0;
             let coffeeTotalUsd = 0;
@@ -539,7 +544,9 @@
                         totalBs += subtotal;
                     }
 
-                    if (item.isCoffee) {
+                    const isCoffeeItem = checkIsCoffee(item);
+
+                    if (isCoffeeItem) {
                         coffeeTotalQty += data.qty;
                         if (item.currency === 'USD') {
                             coffeeTotalUsd += subtotal;
@@ -563,7 +570,6 @@
                 }
             });
 
-            // Agrupación de cafés unificados
             if (coffeeTotalQty > 0) {
                 coffeeTotalBs = formatNum(coffeeTotalBs);
                 coffeeTotalUsd = formatNum(coffeeTotalUsd);
@@ -658,10 +664,14 @@
 
                 if (nameEl && currEl) {
                     const selectedCurr = currEl.value;
+                    const nameVal = nameEl.value.trim() || 'Sin Nombre';
+                    const isCoffee = checkIsCoffee({ id: item.id, name: nameVal, category: item.category });
+
                     newItems.push({
                         ...item,
-                        name: nameEl.value.trim() || 'Sin Nombre',
-                        shortName: shortEl ? shortEl.value.trim() : nameEl.value.trim(),
+                        name: nameVal,
+                        shortName: shortEl ? shortEl.value.trim() : nameVal,
+                        isCoffee: isCoffee,
                         currency: selectedCurr,
                         priceBs: selectedCurr === 'BS' ? (parseFloat(bsEl.value) || 0) : 0,
                         priceUsd: selectedCurr === 'USD' ? (parseFloat(usdEl.value) || 0) : 0
