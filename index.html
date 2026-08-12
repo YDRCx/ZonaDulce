@@ -386,15 +386,15 @@
 
     <script>
         const defaultItems = [
-            { id: 'bollos', name: 'Bollos', shortName: 'Bollos', category: 'General', currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'chilenas', name: 'Chilenas', shortName: 'Chilenas', category: 'General', currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'hallacas', name: 'Hallacas', shortName: 'Hallacas', category: 'General', currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_negro_p', name: 'Café Negro Pequeño', shortName: 'Caf. Neg. Peq.', category: 'Café Negro', currency: 'BS', priceBs: 150, priceUsd: 0 },
-            { id: 'c_negro_m', name: 'Café Negro Mediano', shortName: 'Caf. Neg. Med.', category: 'Café Negro', currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_negro_g', name: 'Café Negro Grande', shortName: 'Caf. Neg. Gde.', category: 'Café Negro', currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_leche_p', name: 'Café con Leche Pequeño', shortName: 'Caf. C/Leche Peq.', category: 'Café con Leche', currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_leche_m', name: 'Café con Leche Mediano', shortName: 'Caf. C/Leche Med.', category: 'Café con Leche', currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_leche_g', name: 'Café con Leche Grande', shortName: 'Caf. C/Leche Gde.', category: 'Café con Leche', currency: 'BS', priceBs: 0, priceUsd: 0 }
+            { id: 'bollos', name: 'Bollos', shortName: 'Bollos', category: 'General', isCoffee: false, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'chilenas', name: 'Chilenas', shortName: 'Chilenas', category: 'General', isCoffee: false, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'hallacas', name: 'Hallacas', shortName: 'Hallacas', category: 'General', isCoffee: false, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_negro_p', name: 'Café Negro Pequeño', shortName: 'Caf. Neg. Peq.', category: 'Café Negro', isCoffee: true, currency: 'BS', priceBs: 150, priceUsd: 0 },
+            { id: 'c_negro_m', name: 'Café Negro Mediano', shortName: 'Caf. Neg. Med.', category: 'Café Negro', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_negro_g', name: 'Café Negro Grande', shortName: 'Caf. Neg. Gde.', category: 'Café Negro', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_p', name: 'Café con Leche Pequeño', shortName: 'Caf. C/Leche Peq.', category: 'Café con Leche', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_m', name: 'Café con Leche Mediano', shortName: 'Caf. C/Leche Med.', category: 'Café con Leche', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_g', name: 'Café con Leche Grande', shortName: 'Caf. C/Leche Gde.', category: 'Café con Leche', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 }
         ];
 
         let items = [];
@@ -514,7 +514,12 @@
             let totalUsd = 0;
             let itemsLines = '';
             let hasSales = false;
-            let counter = 1;
+
+            // Variables para consolidar cafés
+            let coffeeTotalQty = 0;
+            let coffeeTotalBs = 0;
+            let coffeeTotalUsd = 0;
+            let coffeeNotes = [];
 
             items.forEach(item => {
                 const data = itemData[item.id];
@@ -530,16 +535,43 @@
                         totalBs += subtotal;
                     }
 
-                    const numIndex = counter < 10 ? `0${counter}` : counter;
-                    const displayName = item.shortName || item.name;
-
-                    let line = `• ${numIndex} - ${displayName}: *${data.qty}*`;
-                    if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
-                    if (data.note.trim() !== '') line += ` - _${data.note.trim()}_`;
-                    itemsLines += line + '\n';
-                    counter++;
+                    // Si es un café, lo agrupamos
+                    if (item.isCoffee) {
+                        coffeeTotalQty += data.qty;
+                        if (item.currency === 'USD') {
+                            coffeeTotalUsd += subtotal;
+                        } else {
+                            coffeeTotalBs += subtotal;
+                        }
+                        if (data.note.trim() !== '') {
+                            coffeeNotes.push(`${item.shortName || item.name}: ${data.note.trim()}`);
+                        }
+                    } else {
+                        // Ítems normales (Bollos, Chilenas, Hallacas, etc.)
+                        const displayName = item.shortName || item.name;
+                        let line = `• ${displayName} (${data.qty}):`;
+                        if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
+                        if (data.note.trim() !== '') line += ` - _${data.note.trim()}_`;
+                        itemsLines += line + '\n';
+                    }
                 }
             });
+
+            // Agregar la línea unificada de cafés si hubo ventas
+            if (coffeeTotalQty > 0 || coffeeNotes.length > 0) {
+                let coffeeLine = `• Cafés (${coffeeTotalQty}):`;
+                let amounts = [];
+                if (coffeeTotalBs > 0) amounts.push(`${coffeeTotalBs} bs`);
+                if (coffeeTotalUsd > 0) amounts.push(`${coffeeTotalUsd} $`);
+                
+                if (amounts.length > 0) {
+                    coffeeLine += ` *${amounts.join(' / ')}*`;
+                }
+                if (coffeeNotes.length > 0) {
+                    coffeeLine += ` - _${coffeeNotes.join(', ')}_`;
+                }
+                itemsLines = coffeeLine + '\n' + itemsLines;
+            }
 
             let text = `${dayName} - ${formattedDate}\n\n`;
 
@@ -597,7 +629,7 @@
         function closeConfig() { document.getElementById('config-modal').style.display = 'none'; }
 
         function addNewItemConfig() {
-            items.push({ id: 'custom_' + Date.now(), name: 'Nuevo Ítem', shortName: 'Nuevo', category: 'Especiales', currency: 'BS', priceBs: 0, priceUsd: 0 });
+            items.push({ id: 'custom_' + Date.now(), name: 'Nuevo Ítem', shortName: 'Nuevo', category: 'Especiales', isCoffee: false, currency: 'BS', priceBs: 0, priceUsd: 0 });
             openConfig();
         }
 
