@@ -6,27 +6,30 @@
     <title>Reporte de Ventas</title>
     
     <!-- =================================================================
-         SECCIÓN 1: ESTILOS VISUALES (CSS)
+         SECCIÓN 1: ESTILOS VISUALES Y DISEÑO (CSS)
          
-         [GUÍA TÉCNICA DE MODIFICACIÓN]:
-         - Si cambias los nombres de las clases aquí (ej. .item-card),
-           ASEGÚRATE de cambiarlos también en las funciones de JavaScript
-           donde se generan los elementos dinámicamente:
-           * renderItems() -> usa .item-card, .coffee-block-container, etc.
-           * openConfig()  -> usa .config-row, .input-group, etc.
+         [GUÍA TÉCNICA DE MODIFICACIÓN DE ESTILOS]:
+         1. Si cambias los nombres de las clases CSS en este bloque (ejemplo: .item-card),
+            DEBES cambiar ese mismo nombre en JavaScript dentro de las funciones:
+            - renderItems() -> Crea .item-card, .coffee-block-container, .coffee-item-mini
+            - openConfig()  -> Crea .config-row, .input-group, .btn-status
+            Si no los sincronizas, el diseño se desarmará o no aplicará los estilos.
+
+         2. Para cambiar los colores de la app, solo modifica los códigos Hexadecimales
+            dentro de ':root' a continuación.
     ================================================================== -->
     <style>
         :root {
-            /* Variables globales de color: Puedes cambiar estos valores Hexadecimales */
-            --bg-color: #f4f6f8;       /* Fondo de la app */
-            --card-bg: #ffffff;        /* Fondo de tarjetas */
-            --text-color: #333333;     /* Texto general */
-            --primary: #2563eb;        /* Botón Copiar */
-            --primary-hover: #1d4ed8;  
-            --success: #22c55e;        /* Subtotales y Botón Guardar */
-            --wa-color: #25d366;       /* Botón WhatsApp */
-            --danger: #ef4444;         /* Desactivado / Cerrar */
-            --border: #e2e8f0;         /* Líneas divisoras */
+            /* PALETA DE COLORES DE LA APLICACIÓN */
+            --bg-color: #f4f6f8;       /* Fondo general de la página */
+            --card-bg: #ffffff;        /* Fondo blanco de las tarjetas e ítems */
+            --text-color: #333333;     /* Color de texto principal */
+            --primary: #2563eb;        /* Color del botón Copiar (Azul) */
+            --primary-hover: #1d4ed8;  /* Azul oscuro al hacer clic */
+            --success: #22c55e;        /* Color verde para subtotales y guardar */
+            --wa-color: #25d366;       /* Color verde oficial de WhatsApp */
+            --danger: #ef4444;         /* Color rojo para botones inactivos/cerrar */
+            --border: #e2e8f0;         /* Color de bordes y separadores */
         }
 
         * {
@@ -101,7 +104,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* Estructura para ítems estándar (Bollos, Chilenas, Hallacas) */
+        /* TARJETA PARA ÍTEMS ESTÁNDAR (Bollos, Chilenas, Hallacas) */
         .item-card {
             background: var(--card-bg);
             border-radius: 10px;
@@ -133,16 +136,16 @@
         .item-controls {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .btn-counter {
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
             border: 1px solid var(--border);
             background: #f8fafc;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -156,12 +159,12 @@
         }
 
         .input-qty {
-            width: 42px;
-            height: 34px;
+            width: 38px;
+            height: 32px;
             text-align: center;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 600;
         }
 
@@ -193,7 +196,7 @@
             font-size: 0.85rem;
         }
 
-        /* Estructura para la Tarjeta Unificada de Café (2 Columnas) */
+        /* ESTRUCTURA DE TARJETA UNIFICADA PARA CAFÉ (2 COLUMNAS COMPACTAS) */
         .coffee-block-container {
             background: var(--card-bg);
             border-radius: 12px;
@@ -235,7 +238,11 @@
             border-radius: 6px;
         }
 
+        /* Renglón de opción de café: Nombre a la izquierda, botones a la derecha */
         .coffee-item-mini {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 8px;
             padding-bottom: 6px;
             border-bottom: 1px dotted var(--border);
@@ -245,13 +252,6 @@
             border-bottom: none;
             margin-bottom: 0;
             padding-bottom: 0;
-        }
-
-        .coffee-item-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
         }
 
         .coffee-item-title {
@@ -276,7 +276,7 @@
             color: #475569;
         }
 
-        /* Modal de Configuración */
+        /* MODAL EMERGENTE DE CONFIGURACIÓN */
         .modal {
             display: none;
             position: fixed;
@@ -481,47 +481,54 @@
     <!-- =================================================================
          SECCIÓN 2: ESTRUCTURA VISUAL DE LA PÁGINA (HTML)
          
-         [GUÍA TÉCNICA]:
-         Si cambias el ID de un elemento aquí (ej. id="report-text"),
-         DEBES cambiarlo en JavaScript donde se usa document.getElementById('report-text').
+         [CONEXIÓN TÉCNICA HTML -> JAVASCRIPT]:
+         - Cada atributo 'id="..."' en estas etiquetas es invocado directamente
+           por el JavaScript mediante document.getElementById('...').
+         - Si renombras un 'id' aquí, DEBES actualizar el JS en la Sección 3.
     ================================================================== -->
     <header>
         <h1>Reporte de Ventas</h1>
         <div class="date-container">
             <label for="report-date">Fecha:</label>
+            <!-- ID 'report-date': Usado en JS para leer/formatear la fecha seleccionada -->
             <input type="date" id="report-date">
         </div>
     </header>
 
     <div class="top-actions">
+        <!-- onclick="openConfig()": Llama a la función JS que abre la ventana flotante -->
         <button class="btn-config" onclick="openConfig()">⚙ Configurar Precios e Ítems</button>
     </div>
 
-    <!-- Contenedor dinámico donde JavaScript renderiza las tarjetas -->
+    <!-- ID 'items-container': Lugar exacto donde el JS inserta las tarjetas de productos -->
     <div id="items-container"></div>
 
     <div class="report-section">
         <div class="extra-notes">
             <label for="custom-notes">Anotaciones Generales:</label>
+            <!-- ID 'custom-notes': Lee las observaciones globales al final del reporte -->
             <textarea id="custom-notes" placeholder="Escribe aquí observaciones generales del día..." oninput="updateReport()"></textarea>
         </div>
 
         <label for="report-text">Vista Previa del Reporte:</label>
+        <!-- ID 'report-text': Muestra el texto resultante formateado para WhatsApp -->
         <textarea id="report-text" readonly></textarea>
 
         <div class="action-buttons">
+            <!-- ID 'btn-copy-text': Permite cambiar temporalmente el texto a '¡Copiado! ✓' al hacer clic -->
             <button class="btn btn-copy" id="btn-copy-text" onclick="copyReport()">📋 Copiar</button>
             <button class="btn btn-wa" onclick="sendWhatsApp()">💬 WhatsApp</button>
         </div>
     </div>
 
-    <!-- Modal de Configuración -->
+    <!-- VENTANA MODAL FLOTANTE DE CONFIGURACIÓN -->
     <div class="modal" id="config-modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h3>Editar Ítems, Precios y Moneda</h3>
                 <button class="btn-close-modal" onclick="closeConfig()">✕</button>
             </div>
+            <!-- ID 'config-items-list': JS inserta aquí las filas editables del panel -->
             <div id="config-items-list"></div>
             <button class="btn btn-add" onclick="addNewItemConfig()">+ Agregar Ítem Especial</button>
             <button class="btn btn-save" onclick="saveConfig()">Guardar Cambios</button>
@@ -529,17 +536,22 @@
     </div>
 
     <!-- =================================================================
-         SECCIÓN 3: LÓGICA Y DATOS (JAVASCRIPT)
+         SECCIÓN 3: LÓGICA Y DATOS DE LA APLICACIÓN (JAVASCRIPT)
     ================================================================== -->
     <script>
         /*
            -----------------------------------------------------------------
-           [CONEXIÓN CRÍTICA 1: PRECIOS Y PRODUCTOS INICIALES]
-           - Si modificas esta lista en el código, solo surtirá efecto en dispositivos
-             NUEVOS o si el navegador no tiene una configuración previa guardada.
-           - Si ya abriste la app en tu teléfono, la app usará la memoria 'localStorage'.
-           - Para forzar la actualización desde el código, debes cambiar la clave
-             'app_items_config' por una nueva en la función loadItems() (ej. 'app_items_config_v2').
+           [CONEXIÓN TÉCNICA 1: LISTA DE PRODUCTOS Y PRECIOS INICIALES]
+           - Si agregas un nuevo ítem manual en este array, asegúrate de mantener
+             todas sus propiedades ({ id, name, category, isCoffee, active, currency, priceBs, priceUsd }).
+           
+           - IMPORTANTE SOBRE EL ALMACENAMIENTO (localStorage):
+             Si ya abriste esta app en tu navegador, el JS usará los datos guardados
+             en la memoria de tu dispositivo. Si modificas este bloque 'defaultItems'
+             en el código para cambiar precios por defecto en un teléfono existente,
+             DEBES ir a la función loadItems() más abajo y renombrar la clave
+             'app_items_config' a 'app_items_config_v2' para forzar al navegador a leer
+             el nuevo código.
            -----------------------------------------------------------------
         */
         const defaultItems = [
@@ -547,7 +559,7 @@
             { id: 'chilenas', name: 'Chilenas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 850, priceUsd: 0 },
             { id: 'hallacas', name: 'Hallacas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
             
-            /* PRODUCTOS DE CAFÉ (CONEXIÓN TÉCNICA: isCoffee: true obliga a agrupar en 1 solo total) */
+            /* PRODUCTOS DE CAFÉ (CONEXIÓN TÉCNICA: isCoffee: true obliga al sistema a unificar todas sus ventas en 1 sola línea final) */
             { id: 'c_negro_p', name: 'Pequeño', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 0.50 },
             { id: 'c_negro_m', name: 'Mediano', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 1.50 },
             { id: 'c_negro_g', name: 'Grande', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 2.00 },
@@ -559,19 +571,21 @@
 
         let items = [];
         let itemData = {};
-        let coffeeGlobalNote = ''; // Variable de memoria para la nota única de café
+        let coffeeGlobalNote = ''; // Almacena en memoria la nota única global de la caja de café
 
+        // Inicia el selector de fecha con el día de hoy
         document.getElementById('report-date').valueAsDate = new Date();
         document.getElementById('report-date').addEventListener('change', updateReport);
 
+        // Garantiza que ningún cálculo numérico devuelva más de 2 decimales
         function formatNum(num) {
             return Number(Math.round(num + "e2") + "e-2");
         }
 
         /* 
-           [CONEXIÓN CRÍTICA 2: RECONOCIMIENTO DE CAFÉS]
-           Esta función determina si un ítem debe sumarse a la caja única de café.
-           Busca si isCoffee === true o si la palabra 'caf' existe en el ID o Nombre.
+           [CONEXIÓN TÉCNICA 2: RECONOCIMIENTO AUTOMÁTICO DE CAFÉ]
+           Esta función identifica si un producto es café incluso si agregas
+           un ítem nuevo desde el panel flotante de la app que tenga la palabra "Café".
         */
         function checkIsCoffee(item) {
             if (item.isCoffee) return true;
@@ -579,8 +593,9 @@
             return str.includes('caf') || str.includes('coffee');
         }
 
+        // Carga la lista guardada desde la memoria local del navegador
         function loadItems() {
-            // [MEMORIA NAVEGADOR]: Cambia 'app_items_config' si deseas reiniciar todo
+            // Clave en memoria local: 'app_items_config'
             const saved = localStorage.getItem('app_items_config');
             if (saved) {
                 items = JSON.parse(saved);
@@ -596,6 +611,11 @@
             renderItems();
         }
 
+        /* 
+           [CONEXIÓN TÉCNICA 3: DIBUJO DE PRODUCTOS EN PANTALLA]
+           Esta función genera las etiquetas HTML internas para la pantalla principal.
+           Aplica el diseño de 2 columnas para el café e ítems sencillos para el resto.
+        */
         function renderItems() {
             const container = document.getElementById('items-container');
             container.innerHTML = '';
@@ -603,7 +623,7 @@
             let generalItems = items.filter(i => !checkIsCoffee(i) && i.active !== false);
             let coffeeItems = items.filter(i => checkIsCoffee(i) && i.active !== false);
 
-            // 1. Renderizar Ítems Normales (Bollos, Chilenas, Hallacas)
+            // 1. Renderizar Ítems Generales (Bollos, Chilenas, Hallacas)
             if (generalItems.length > 0) {
                 const catHeader = document.createElement('div');
                 catHeader.className = 'section-title';
@@ -642,7 +662,7 @@
                 });
             }
 
-            // 2. Renderizar Bloque Único de Café (2 Columnas SIN notas individuales)
+            // 2. Renderizar Bloque Único para Café (Nombre a la izquierda, botones a la derecha)
             if (coffeeItems.length > 0) {
                 const catHeader = document.createElement('div');
                 catHeader.className = 'section-title';
@@ -673,14 +693,14 @@
 
                         html += `
                             <div class="coffee-item-mini">
-                                <div class="coffee-item-head">
+                                <div>
                                     <div class="coffee-item-title">${label}</div>
                                     <div class="coffee-item-sub">
                                         ${activePrice > 0 ? symbol + activePrice : ''}
                                         ${data.qty > 0 && activePrice > 0 ? ' <b style="color:#22c55e;">(' + symbol + subtotal + ')</b>' : ''}
                                     </div>
                                 </div>
-                                <div class="item-controls" style="justify-content: space-between; margin-top: 4px;">
+                                <div class="item-controls">
                                     <button class="btn-counter" onclick="changeQty('${item.id}', -1)">-</button>
                                     <input type="number" class="input-qty" value="${data.qty}" min="0" onchange="setQty('${item.id}', this.value)">
                                     <button class="btn-counter" onclick="changeQty('${item.id}', 1)">+</button>
@@ -697,7 +717,7 @@
                 gridHtml += renderCoffeeCol('Con Leche', lecheItems);
                 gridHtml += `</div>`;
 
-                // Nota ÚNICA global para la caja de Café
+                // Observación global única para la caja de Café
                 gridHtml += `
                     <div class="coffee-global-note">
                         <span>Observación General del Café:</span>
@@ -715,6 +735,7 @@
             updateReport();
         }
 
+        // Incremento / Decremento de cantidades
         function changeQty(id, delta) {
             if (!itemData[id]) itemData[id] = { qty: 0, note: '' };
             let newQty = parseInt(itemData[id].qty || 0) + delta;
@@ -747,6 +768,7 @@
             if (wrap) wrap.classList.toggle('active');
         }
 
+        // Devuelve el día de la semana según la fecha escogida
         function getDayName(dateString) {
             if (!dateString) return '';
             const parts = dateString.split('-');
@@ -756,8 +778,13 @@
         }
 
         /* 
-           [CONEXIÓN CRÍTICA 3: GENERACIÓN DEL REPORTE FINAL]
-           Si cambias el formato del texto de WhatsApp, edita esta función.
+           -----------------------------------------------------------------
+           [CONEXIÓN TÉCNICA 4: GENERACIÓN DEL TEXTO FINAL WHATSAPP]
+           - Se eliminaron las filas acumuladas (*TOTAL BS:*, *TOTAL USD:*).
+           - Inicia directamente con el Día y la Fecha.
+           - Unifica automáticamente todos los cafés en un único renglón:
+             • Cafés (Total Unidades): *Monto $ / Monto Bs* - _Observación_
+           -----------------------------------------------------------------
         */
         function updateReport() {
             const dateVal = document.getElementById('report-date').value;
@@ -770,8 +797,6 @@
                 dayName = getDayName(dateVal);
             }
 
-            let totalBs = 0;
-            let totalUsd = 0;
             let itemsLines = '';
             let hasSales = false;
 
@@ -780,7 +805,7 @@
             let coffeeTotalUsd = 0;
 
             items.forEach(item => {
-                if (item.active === false) return;
+                if (item.active === false) return; // Omite ítems inactivos
 
                 const data = itemData[item.id];
                 if (data && (data.qty > 0 || data.note.trim() !== '')) {
@@ -788,12 +813,6 @@
                     const activePrice = item.currency === 'USD' ? item.priceUsd : item.priceBs;
                     const symbolText = item.currency === 'USD' ? '$' : 'bs';
                     const subtotal = formatNum(data.qty * activePrice);
-
-                    if (item.currency === 'USD') {
-                        totalUsd += subtotal;
-                    } else {
-                        totalBs += subtotal;
-                    }
 
                     const isCoffeeItem = checkIsCoffee(item);
 
@@ -805,6 +824,7 @@
                             coffeeTotalBs += subtotal;
                         }
                     } else {
+                        // Productos normales (Bollos, Chilenas, Hallacas, etc.)
                         let line = `• ${item.name} (${data.qty}):`;
                         if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
                         if (data.note.trim() !== '') line += ` - _${data.note.trim()}_`;
@@ -813,7 +833,7 @@
                 }
             });
 
-            // Agrupación FINAL de Café en 1 solo ítem
+            // Agrupación del ítem único 'Cafés'
             if (coffeeTotalQty > 0 || coffeeGlobalNote.trim() !== '') {
                 hasSales = true;
                 coffeeTotalBs = formatNum(coffeeTotalBs);
@@ -833,15 +853,9 @@
                 itemsLines = coffeeLine + '\n' + itemsLines;
             }
 
-            totalBs = formatNum(totalBs);
-            totalUsd = formatNum(totalUsd);
-
+            // Construcción del mensaje sin filas de Totales
             let text = `${dayName} - ${formattedDate}\n\n`;
-
-            if (totalBs > 0) text += `*TOTAL BS:* Bs. ${totalBs}\n`;
-            if (totalUsd > 0) text += `*TOTAL USD:* $ ${totalUsd}\n`;
-
-            text += `\n` + (hasSales ? itemsLines : `(No se registraron ventas en los ítems)\n`);
+            text += (hasSales ? itemsLines : `(No se registraron ventas en los ítems)\n`);
 
             const generalNotes = document.getElementById('custom-notes').value.trim();
             if (generalNotes) text += `\n*OBSERVACIONES:*\n${generalNotes}`;
@@ -849,7 +863,10 @@
             document.getElementById('report-text').value = text;
         }
 
-        // Modal de Configuración
+        /* 
+           [CONEXIÓN TÉCNICA 5: PANEL FLOTANTE DE CONFIGURACIÓN]
+           Muestra la lista editable de nombres, precios, monedas y botón Activo/Inactivo.
+        */
         function openConfig() {
             const list = document.getElementById('config-items-list');
             list.innerHTML = '';
@@ -888,11 +905,13 @@
             document.getElementById('config-modal').style.display = 'flex';
         }
 
+        // Alterna el estado de un ítem entre Activo (se muestra) e Inactivo (se oculta sin borrarse)
         function toggleItemStatus(index) {
             items[index].active = items[index].active === false ? true : false;
             openConfig();
         }
 
+        // Habilita el campo de Bs. o el de $ según la moneda escogida
         function toggleCurrencyInput(index) {
             const curr = document.getElementById(`cfg-curr-${index}`).value;
             const inputBs = document.getElementById(`cfg-bs-${index}`);
@@ -911,11 +930,13 @@
 
         function closeConfig() { document.getElementById('config-modal').style.display = 'none'; }
 
+        // Agrega una nueva fila al panel de configuración
         function addNewItemConfig() {
             items.push({ id: 'custom_' + Date.now(), name: 'Nuevo Ítem', category: 'Especiales', isCoffee: false, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 });
             openConfig();
         }
 
+        // Guarda los cambios del panel en la memoria 'localStorage' del navegador
         function saveConfig() {
             const newItems = [];
             items.forEach((item, index) => {
@@ -945,6 +966,7 @@
             renderItems();
         }
 
+        // Copia el texto resultante al portapapeles
         function copyReport() {
             const area = document.getElementById('report-text');
             area.select();
@@ -955,11 +977,13 @@
             setTimeout(() => btn.innerText = originalText, 2000);
         }
 
+        // Abre WhatsApp con el mensaje pre-cargado
         function sendWhatsApp() {
             const text = document.getElementById('report-text').value;
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
         }
 
+        // Ejecución al abrir la aplicación
         loadItems();
     </script>
 </body>
