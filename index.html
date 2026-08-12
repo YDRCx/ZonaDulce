@@ -4,17 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte de Ventas</title>
+    
+    <!-- =================================================================
+         SECCIÓN 1: ESTILOS VISUALES (CSS)
+         Aquí puedes cambiar colores, tamaños de botones y tipografía.
+    ================================================================== -->
     <style>
         :root {
-            --bg-color: #f4f6f8;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --success: #22c55e;
-            --wa-color: #25d366;
-            --danger: #ef4444;
-            --border: #e2e8f0;
+            /* COLORES PRINCIPALES DE LA APLICACIÓN */
+            --bg-color: #f4f6f8;       /* Fondo general de la página */
+            --card-bg: #ffffff;        /* Fondo de las tarjetas e ítems */
+            --text-color: #333333;     /* Color del texto principal */
+            --primary: #2563eb;        /* Color del botón Copiar (Azul) */
+            --primary-hover: #1d4ed8;  /* Azul oscuro al presionar */
+            --success: #22c55e;        /* Color verde para subtotales y botón guardar */
+            --wa-color: #25d366;       /* Color verde oficial de WhatsApp */
+            --danger: #ef4444;         /* Color rojo para elementos inactivos/cerrar */
+            --border: #e2e8f0;         /* Color de los bordes suaves */
         }
 
         * {
@@ -381,7 +387,12 @@
 </head>
 <body>
 
+    <!-- =================================================================
+         SECCIÓN 2: ESTRUCTURA VISUAL DE LA PÁGINA (HTML)
+         Textos editables de la interfaz principal.
+    ================================================================== -->
     <header>
+        <!-- Título principal superior -->
         <h1>Reporte de Ventas</h1>
         <div class="date-container">
             <label for="report-date">Fecha:</label>
@@ -390,14 +401,17 @@
     </header>
 
     <div class="top-actions">
+        <!-- Texto del botón que abre la configuración -->
         <button class="btn-config" onclick="openConfig()">⚙ Configurar Precios e Ítems</button>
     </div>
 
+    <!-- Contenedor donde se dibuja la lista de productos automáticamente -->
     <div id="items-container"></div>
 
     <div class="report-section">
         <div class="extra-notes">
             <label for="custom-notes">Anotaciones Generales:</label>
+            <!-- Texto placeholder de la caja de observaciones -->
             <textarea id="custom-notes" placeholder="Escribe aquí observaciones generales del día..." oninput="updateReport()"></textarea>
         </div>
 
@@ -405,11 +419,13 @@
         <textarea id="report-text" readonly></textarea>
 
         <div class="action-buttons">
+            <!-- Botones finales de acción -->
             <button class="btn btn-copy" id="btn-copy-text" onclick="copyReport()">📋 Copiar</button>
             <button class="btn btn-wa" onclick="sendWhatsApp()">💬 WhatsApp</button>
         </div>
     </div>
 
+    <!-- Modal emergente para la configuración -->
     <div class="modal" id="config-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -422,35 +438,64 @@
         </div>
     </div>
 
+    <!-- =================================================================
+         SECCIÓN 3: LÓGICA Y DATOS (JAVASCRIPT)
+         Aquí están los precios por defecto y la programación del sistema.
+    ================================================================== -->
     <script>
+        /* 
+           -----------------------------------------------------------------
+           >>> DATO TÉCNICO EDITABLE: LISTA DE PRODUCTOS POR DEFECTO <<<
+           Si en algún momento deseas reiniciar la app o cambiar los precios
+           iniciales fijos directamente en el código, modifica este bloque:
+           
+           Propiedades por ítem:
+           - id: Identificador interno único (no usar espacios ni tildes).
+           - name: Nombre visible en la pantalla.
+           - category: Título de la sección a la que pertenece.
+           - isCoffee: 'true' para agruparse en la línea de cafés, 'false' para productos independientes.
+           - active: 'true' para mostrar en pantalla, 'false' para ocultar por defecto.
+           - currency: 'USD' para Dólares, 'BS' para Bolívares.
+           - priceBs: Precio en Bolívares.
+           - priceUsd: Precio en Dólares.
+           -----------------------------------------------------------------
+        */
         const defaultItems = [
             { id: 'bollos', name: 'Bollos', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 650, priceUsd: 0 },
             { id: 'chilenas', name: 'Chilenas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 850, priceUsd: 0 },
             { id: 'hallacas', name: 'Hallacas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_negro_p', name: 'Café Negro Pequeño', category: 'Café Negro', isCoffee: true, active: true, currency: 'BS', priceBs: 150, priceUsd: 0 },
-            { id: 'c_negro_m', name: 'Café Negro Mediano', category: 'Café Negro', isCoffee: true, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_negro_g', name: 'Café Negro Grande', category: 'Café Negro', isCoffee: true, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_leche_p', name: 'Café con Leche Pequeño', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 2.5 },
-            { id: 'c_leche_m', name: 'Café con Leche Mediano', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 1.5 },
-            { id: 'c_leche_g', name: 'Café con Leche Grande', category: 'Café con Leche', isCoffee: true, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 }
+            
+            /* PRECIOS DE CAFÉ NEGRO (PREDETERMINADOS EN USD) */
+            { id: 'c_negro_p', name: 'Café Negro Pequeño', category: 'Café Negro', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 0.50 },
+            { id: 'c_negro_m', name: 'Café Negro Mediano', category: 'Café Negro', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 1.50 },
+            { id: 'c_negro_g', name: 'Café Negro Grande', category: 'Café Negro', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 2.00 },
+            
+            /* PRECIOS DE CAFÉ CON LECHE (PREDETERMINADOS EN USD) */
+            { id: 'c_leche_p', name: 'Café con Leche Pequeño', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 0.75 },
+            { id: 'c_leche_m', name: 'Café con Leche Mediano', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 1.75 },
+            { id: 'c_leche_g', name: 'Café con Leche Grande', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 2.70 }
         ];
 
         let items = [];
         let itemData = {};
 
+        // Asignación de fecha actual por defecto
         document.getElementById('report-date').valueAsDate = new Date();
         document.getElementById('report-date').addEventListener('change', updateReport);
 
+        // Función matemática para garantizar máximo 2 decimales limpios
         function formatNum(num) {
             return Number(Math.round(num + "e2") + "e-2");
         }
 
+        // Verificación de categoría/tipo de café para la unificación del reporte
         function checkIsCoffee(item) {
             if (item.isCoffee) return true;
             const str = (item.id + " " + item.name + " " + (item.category || "")).toLowerCase();
             return str.includes('caf') || str.includes('coffee');
         }
 
+        // Cargar ítems desde el almacenamiento del navegador (localStorage)
         function loadItems() {
             const saved = localStorage.getItem('app_items_config');
             if (saved) {
@@ -467,13 +512,14 @@
             renderItems();
         }
 
+        // Renderizado visual de los productos en la pantalla
         function renderItems() {
             const container = document.getElementById('items-container');
             container.innerHTML = '';
             let currentCategory = '';
 
             items.forEach(item => {
-                if (item.active === false) return;
+                if (item.active === false) return; // Si está inactivo, no se muestra
 
                 if (item.category && item.category !== currentCategory) {
                     currentCategory = item.category;
@@ -515,6 +561,7 @@
             updateReport();
         }
 
+        // Funciones de control de cantidades y notas
         function changeQty(id, delta) {
             if (!itemData[id]) itemData[id] = { qty: 0, note: '' };
             let newQty = parseInt(itemData[id].qty || 0) + delta;
@@ -542,6 +589,7 @@
             if (wrap) wrap.classList.toggle('active');
         }
 
+        // Obtener el día de la semana correspondiente a la fecha seleccionada
         function getDayName(dateString) {
             if (!dateString) return '';
             const parts = dateString.split('-');
@@ -550,6 +598,13 @@
             return days[dateObj.getDay()];
         }
 
+        /* 
+           -----------------------------------------------------------------
+           >>> ESTRUCTURA DEL TEXTO DE SALIDA PARA WHATSAPP <<<
+           Aquí se le da forma al texto copiable. Si deseas cambiar cómo
+           se formatean los encabezados, edita esta función.
+           -----------------------------------------------------------------
+        */
         function updateReport() {
             const dateVal = document.getElementById('report-date').value;
             let formattedDate = dateVal;
@@ -600,6 +655,7 @@
                             coffeeNotes.push(`${item.name}: _${data.note.trim()}_`);
                         }
                     } else {
+                        // Productos normales (Bollos, Chilenas, Hallacas, etc.)
                         let line = `• ${item.name} (${data.qty}):`;
                         if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
                         if (data.note.trim() !== '') line += ` - _${data.note.trim()}_`;
@@ -608,6 +664,7 @@
                 }
             });
 
+            // Agrupación de la línea unificada de cafés
             if (coffeeTotalQty > 0) {
                 coffeeTotalBs = formatNum(coffeeTotalBs);
                 coffeeTotalUsd = formatNum(coffeeTotalUsd);
@@ -642,6 +699,7 @@
             document.getElementById('report-text').value = text;
         }
 
+        // Panel emergente de configuración de precios
         function openConfig() {
             const list = document.getElementById('config-items-list');
             list.innerHTML = '';
@@ -737,6 +795,7 @@
             renderItems();
         }
 
+        // Copiar texto formateado al portapapeles
         function copyReport() {
             const area = document.getElementById('report-text');
             area.select();
@@ -747,11 +806,13 @@
             setTimeout(() => btn.innerText = originalText, 2000);
         }
 
+        // Abrir app de WhatsApp para compartir
         function sendWhatsApp() {
             const text = document.getElementById('report-text').value;
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
         }
 
+        // Iniciar la aplicación
         loadItems();
     </script>
 </body>
