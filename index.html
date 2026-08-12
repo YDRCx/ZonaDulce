@@ -7,18 +7,26 @@
     
     <!-- =================================================================
          SECCIÓN 1: ESTILOS VISUALES (CSS)
+         
+         [GUÍA TÉCNICA DE MODIFICACIÓN]:
+         - Si cambias los nombres de las clases aquí (ej. .item-card),
+           ASEGÚRATE de cambiarlos también en las funciones de JavaScript
+           donde se generan los elementos dinámicamente:
+           * renderItems() -> usa .item-card, .coffee-block-container, etc.
+           * openConfig()  -> usa .config-row, .input-group, etc.
     ================================================================== -->
     <style>
         :root {
-            --bg-color: #f4f6f8;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --success: #22c55e;
-            --wa-color: #25d366;
-            --danger: #ef4444;
-            --border: #e2e8f0;
+            /* Variables globales de color: Puedes cambiar estos valores Hexadecimales */
+            --bg-color: #f4f6f8;       /* Fondo de la app */
+            --card-bg: #ffffff;        /* Fondo de tarjetas */
+            --text-color: #333333;     /* Texto general */
+            --primary: #2563eb;        /* Botón Copiar */
+            --primary-hover: #1d4ed8;  
+            --success: #22c55e;        /* Subtotales y Botón Guardar */
+            --wa-color: #25d366;       /* Botón WhatsApp */
+            --danger: #ef4444;         /* Desactivado / Cerrar */
+            --border: #e2e8f0;         /* Líneas divisoras */
         }
 
         * {
@@ -93,6 +101,7 @@
             letter-spacing: 0.5px;
         }
 
+        /* Estructura para ítems estándar (Bollos, Chilenas, Hallacas) */
         .item-card {
             background: var(--card-bg);
             border-radius: 10px;
@@ -128,12 +137,12 @@
         }
 
         .btn-counter {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             border-radius: 8px;
             border: 1px solid var(--border);
             background: #f8fafc;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -147,12 +156,12 @@
         }
 
         .input-qty {
-            width: 45px;
-            height: 36px;
+            width: 42px;
+            height: 34px;
             text-align: center;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
         }
 
@@ -184,7 +193,7 @@
             font-size: 0.85rem;
         }
 
-        /* ESTILOS DE LA NAVEGACIÓN EN 2 COLUMNAS PARA CAFÉ */
+        /* Estructura para la Tarjeta Unificada de Café (2 Columnas) */
         .coffee-block-container {
             background: var(--card-bg);
             border-radius: 12px;
@@ -219,7 +228,7 @@
             font-size: 0.85rem;
             font-weight: 700;
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #334155;
             background: #f1f5f9;
             padding: 4px;
@@ -227,8 +236,8 @@
         }
 
         .coffee-item-mini {
-            margin-bottom: 10px;
-            padding-bottom: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 1px dotted var(--border);
         }
 
@@ -246,16 +255,28 @@
         }
 
         .coffee-item-title {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 600;
         }
 
         .coffee-item-sub {
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: #64748b;
         }
 
-        /* MODAL CONFIGURACIÓN */
+        .coffee-global-note {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Modal de Configuración */
         .modal {
             display: none;
             position: fixed;
@@ -459,6 +480,10 @@
 
     <!-- =================================================================
          SECCIÓN 2: ESTRUCTURA VISUAL DE LA PÁGINA (HTML)
+         
+         [GUÍA TÉCNICA]:
+         Si cambias el ID de un elemento aquí (ej. id="report-text"),
+         DEBES cambiarlo en JavaScript donde se usa document.getElementById('report-text').
     ================================================================== -->
     <header>
         <h1>Reporte de Ventas</h1>
@@ -472,6 +497,7 @@
         <button class="btn-config" onclick="openConfig()">⚙ Configurar Precios e Ítems</button>
     </div>
 
+    <!-- Contenedor dinámico donde JavaScript renderiza las tarjetas -->
     <div id="items-container"></div>
 
     <div class="report-section">
@@ -489,7 +515,7 @@
         </div>
     </div>
 
-    <!-- Modal emergente para configuración -->
+    <!-- Modal de Configuración -->
     <div class="modal" id="config-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -506,23 +532,34 @@
          SECCIÓN 3: LÓGICA Y DATOS (JAVASCRIPT)
     ================================================================== -->
     <script>
+        /*
+           -----------------------------------------------------------------
+           [CONEXIÓN CRÍTICA 1: PRECIOS Y PRODUCTOS INICIALES]
+           - Si modificas esta lista en el código, solo surtirá efecto en dispositivos
+             NUEVOS o si el navegador no tiene una configuración previa guardada.
+           - Si ya abriste la app en tu teléfono, la app usará la memoria 'localStorage'.
+           - Para forzar la actualización desde el código, debes cambiar la clave
+             'app_items_config' por una nueva en la función loadItems() (ej. 'app_items_config_v2').
+           -----------------------------------------------------------------
+        */
         const defaultItems = [
             { id: 'bollos', name: 'Bollos', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 650, priceUsd: 0 },
             { id: 'chilenas', name: 'Chilenas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 850, priceUsd: 0 },
             { id: 'hallacas', name: 'Hallacas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
             
-            /* DERECHA / IZQUIERDA DE LA TARJETA CAFÉ */
-            { id: 'c_negro_p', name: 'Negro Pequeño', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 0.50 },
-            { id: 'c_negro_m', name: 'Negro Mediano', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 1.50 },
-            { id: 'c_negro_g', name: 'Negro Grande', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 2.00 },
+            /* PRODUCTOS DE CAFÉ (CONEXIÓN TÉCNICA: isCoffee: true obliga a agrupar en 1 solo total) */
+            { id: 'c_negro_p', name: 'Pequeño', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 0.50 },
+            { id: 'c_negro_m', name: 'Mediano', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 1.50 },
+            { id: 'c_negro_g', name: 'Grande', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 2.00 },
             
-            { id: 'c_leche_p', name: 'Con Leche Pequeño', category: 'Café con Leche', isCoffee: true, coffeeType: 'leche', active: true, currency: 'USD', priceBs: 0, priceUsd: 0.75 },
-            { id: 'c_leche_m', name: 'Con Leche Mediano', category: 'Café con Leche', isCoffee: true, coffeeType: 'leche', active: true, currency: 'USD', priceBs: 0, priceUsd: 1.75 },
-            { id: 'c_leche_g', name: 'Con Leche Grande', category: 'Café con Leche', isCoffee: true, coffeeType: 'leche', active: true, currency: 'USD', priceBs: 0, priceUsd: 2.70 }
+            { id: 'c_leche_p', name: 'Pequeño', category: 'Café con Leche', isCoffee: true, coffeeType: 'leche', active: true, currency: 'USD', priceBs: 0, priceUsd: 0.75 },
+            { id: 'c_leche_m', name: 'Mediano', category: 'Café con Leche', isCoffee: true, coffeeType: 'leche', active: true, currency: 'USD', priceBs: 0, priceUsd: 1.75 },
+            { id: 'c_leche_g', name: 'Grande', category: 'Café con Leche', isCoffee: true, coffeeType: 'leche', active: true, currency: 'USD', priceBs: 0, priceUsd: 2.70 }
         ];
 
         let items = [];
         let itemData = {};
+        let coffeeGlobalNote = ''; // Variable de memoria para la nota única de café
 
         document.getElementById('report-date').valueAsDate = new Date();
         document.getElementById('report-date').addEventListener('change', updateReport);
@@ -531,6 +568,11 @@
             return Number(Math.round(num + "e2") + "e-2");
         }
 
+        /* 
+           [CONEXIÓN CRÍTICA 2: RECONOCIMIENTO DE CAFÉS]
+           Esta función determina si un ítem debe sumarse a la caja única de café.
+           Busca si isCoffee === true o si la palabra 'caf' existe en el ID o Nombre.
+        */
         function checkIsCoffee(item) {
             if (item.isCoffee) return true;
             const str = (item.id + " " + item.name + " " + (item.category || "")).toLowerCase();
@@ -538,6 +580,7 @@
         }
 
         function loadItems() {
+            // [MEMORIA NAVEGADOR]: Cambia 'app_items_config' si deseas reiniciar todo
             const saved = localStorage.getItem('app_items_config');
             if (saved) {
                 items = JSON.parse(saved);
@@ -560,7 +603,7 @@
             let generalItems = items.filter(i => !checkIsCoffee(i) && i.active !== false);
             let coffeeItems = items.filter(i => checkIsCoffee(i) && i.active !== false);
 
-            // 1. Renderizar Productos Generales
+            // 1. Renderizar Ítems Normales (Bollos, Chilenas, Hallacas)
             if (generalItems.length > 0) {
                 const catHeader = document.createElement('div');
                 catHeader.className = 'section-title';
@@ -599,7 +642,7 @@
                 });
             }
 
-            // 2. Renderizar Bloque Único en 2 Columnas para Cafés
+            // 2. Renderizar Bloque Único de Café (2 Columnas SIN notas individuales)
             if (coffeeItems.length > 0) {
                 const catHeader = document.createElement('div');
                 catHeader.className = 'section-title';
@@ -609,10 +652,9 @@
                 const coffeeBlock = document.createElement('div');
                 coffeeBlock.className = 'coffee-block-container';
 
-                let negroItems = coffeeItems.filter(i => i.coffeeType === 'negro' || i.name.toLowerCase().includes('negro') || i.category.toLowerCase().includes('negro'));
-                let lecheItems = coffeeItems.filter(i => i.coffeeType === 'leche' || i.name.toLowerCase().includes('leche') || i.category.toLowerCase().includes('leche'));
+                let negroItems = coffeeItems.filter(i => i.coffeeType === 'negro' || i.name.toLowerCase().includes('negro') || (i.category && i.category.toLowerCase().includes('negro')));
+                let lecheItems = coffeeItems.filter(i => i.coffeeType === 'leche' || i.name.toLowerCase().includes('leche') || (i.category && i.category.toLowerCase().includes('leche')));
                 
-                // Si la clasificación automática falla, dividir los cafés por la mitad
                 if (negroItems.length === 0 && lecheItems.length === 0) {
                     const half = Math.ceil(coffeeItems.length / 2);
                     negroItems = coffeeItems.slice(0, half);
@@ -627,28 +669,21 @@
                         const symbol = item.currency === 'USD' ? '$' : 'Bs.';
                         const subtotal = formatNum(data.qty * activePrice);
 
-                        // Limpiar la etiqueta visual
-                        let label = item.name.replace(/Café/gi, '').replace(/con Leche/gi, 'C/Leche').trim();
+                        let label = item.name.replace(/Café/gi, '').replace(/con Leche/gi, '').replace(/Negro/gi, '').trim();
 
                         html += `
                             <div class="coffee-item-mini">
                                 <div class="coffee-item-head">
-                                    <div>
-                                        <div class="coffee-item-title">${label}</div>
-                                        <div class="coffee-item-sub">
-                                            ${activePrice > 0 ? symbol + activePrice : ''}
-                                            ${data.qty > 0 && activePrice > 0 ? ' <b style="color:#22c55e;">(' + symbol + subtotal + ')</b>' : ''}
-                                        </div>
+                                    <div class="coffee-item-title">${label}</div>
+                                    <div class="coffee-item-sub">
+                                        ${activePrice > 0 ? symbol + activePrice : ''}
+                                        ${data.qty > 0 && activePrice > 0 ? ' <b style="color:#22c55e;">(' + symbol + subtotal + ')</b>' : ''}
                                     </div>
-                                    <button class="btn-toggle-note" onclick="toggleNote('${item.id}')">▼</button>
                                 </div>
                                 <div class="item-controls" style="justify-content: space-between; margin-top: 4px;">
                                     <button class="btn-counter" onclick="changeQty('${item.id}', -1)">-</button>
                                     <input type="number" class="input-qty" value="${data.qty}" min="0" onchange="setQty('${item.id}', this.value)">
                                     <button class="btn-counter" onclick="changeQty('${item.id}', 1)">+</button>
-                                </div>
-                                <div class="note-container ${data.note ? 'active' : ''}" id="note-wrap-${item.id}">
-                                    <input type="text" placeholder="Nota..." value="${data.note}" oninput="setNote('${item.id}', this.value)">
                                 </div>
                             </div>
                         `;
@@ -661,6 +696,17 @@
                 gridHtml += renderCoffeeCol('Negro', negroItems);
                 gridHtml += renderCoffeeCol('Con Leche', lecheItems);
                 gridHtml += `</div>`;
+
+                // Nota ÚNICA global para la caja de Café
+                gridHtml += `
+                    <div class="coffee-global-note">
+                        <span>Observación General del Café:</span>
+                        <button class="btn-toggle-note" onclick="toggleNote('coffee_global')">▼</button>
+                    </div>
+                    <div class="note-container ${coffeeGlobalNote ? 'active' : ''}" id="note-wrap-coffee_global">
+                        <input type="text" placeholder="Ej: 1 regalado, 2 fiados..." value="${coffeeGlobalNote}" oninput="setCoffeeGlobalNote(this.value)">
+                    </div>
+                `;
 
                 coffeeBlock.innerHTML = gridHtml;
                 container.appendChild(coffeeBlock);
@@ -691,6 +737,11 @@
             updateReport();
         }
 
+        function setCoffeeGlobalNote(val) {
+            coffeeGlobalNote = val;
+            updateReport();
+        }
+
         function toggleNote(id) {
             const wrap = document.getElementById(`note-wrap-${id}`);
             if (wrap) wrap.classList.toggle('active');
@@ -704,6 +755,10 @@
             return days[dateObj.getDay()];
         }
 
+        /* 
+           [CONEXIÓN CRÍTICA 3: GENERACIÓN DEL REPORTE FINAL]
+           Si cambias el formato del texto de WhatsApp, edita esta función.
+        */
         function updateReport() {
             const dateVal = document.getElementById('report-date').value;
             let formattedDate = dateVal;
@@ -723,7 +778,6 @@
             let coffeeTotalQty = 0;
             let coffeeTotalBs = 0;
             let coffeeTotalUsd = 0;
-            let coffeeNotes = [];
 
             items.forEach(item => {
                 if (item.active === false) return;
@@ -750,9 +804,6 @@
                         } else {
                             coffeeTotalBs += subtotal;
                         }
-                        if (data.note.trim() !== '') {
-                            coffeeNotes.push(`${item.name}: _${data.note.trim()}_`);
-                        }
                     } else {
                         let line = `• ${item.name} (${data.qty}):`;
                         if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
@@ -762,7 +813,9 @@
                 }
             });
 
-            if (coffeeTotalQty > 0) {
+            // Agrupación FINAL de Café en 1 solo ítem
+            if (coffeeTotalQty > 0 || coffeeGlobalNote.trim() !== '') {
+                hasSales = true;
                 coffeeTotalBs = formatNum(coffeeTotalBs);
                 coffeeTotalUsd = formatNum(coffeeTotalUsd);
 
@@ -774,8 +827,8 @@
                 if (amounts.length > 0) {
                     coffeeLine += ` *${amounts.join(' / ')}*`;
                 }
-                if (coffeeNotes.length > 0) {
-                    coffeeLine += ` - ${coffeeNotes.join(', ')}`;
+                if (coffeeGlobalNote.trim() !== '') {
+                    coffeeLine += ` - _${coffeeGlobalNote.trim()}_`;
                 }
                 itemsLines = coffeeLine + '\n' + itemsLines;
             }
@@ -796,6 +849,7 @@
             document.getElementById('report-text').value = text;
         }
 
+        // Modal de Configuración
         function openConfig() {
             const list = document.getElementById('config-items-list');
             list.innerHTML = '';
