@@ -389,12 +389,12 @@
             { id: 'bollos', name: 'Bollos', shortName: 'Bollos', category: 'General', isCoffee: false, currency: 'BS', priceBs: 0, priceUsd: 0 },
             { id: 'chilenas', name: 'Chilenas', shortName: 'Chilenas', category: 'General', isCoffee: false, currency: 'BS', priceBs: 0, priceUsd: 0 },
             { id: 'hallacas', name: 'Hallacas', shortName: 'Hallacas', category: 'General', isCoffee: false, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_negro_p', name: 'Café Negro Pequeño', shortName: 'Caf. Neg. Peq.', category: 'Café Negro', isCoffee: true, currency: 'BS', priceBs: 150, priceUsd: 0 },
-            { id: 'c_negro_m', name: 'Café Negro Mediano', shortName: 'Caf. Neg. Med.', category: 'Café Negro', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_negro_g', name: 'Café Negro Grande', shortName: 'Caf. Neg. Gde.', category: 'Café Negro', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_leche_p', name: 'Café con Leche Pequeño', shortName: 'Caf. C/Leche Peq.', category: 'Café con Leche', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_leche_m', name: 'Café con Leche Mediano', shortName: 'Caf. C/Leche Med.', category: 'Café con Leche', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_leche_g', name: 'Café con Leche Grande', shortName: 'Caf. C/Leche Gde.', category: 'Café con Leche', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 }
+            { id: 'c_negro_p', name: 'Café Negro Pequeño', shortName: 'Caf. P/Negro', category: 'Café Negro', isCoffee: true, currency: 'BS', priceBs: 150, priceUsd: 0 },
+            { id: 'c_negro_m', name: 'Café Negro Mediano', shortName: 'Caf. M/Negro', category: 'Café Negro', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_negro_g', name: 'Café Negro Grande', shortName: 'Caf. G/Negro', category: 'Café Negro', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_p', name: 'Café con Leche Pequeño', shortName: 'Caf. P/Leche', category: 'Café con Leche', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_m', name: 'Café con Leche Mediano', shortName: 'Caf. M/Leche', category: 'Café con Leche', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_g', name: 'Café con Leche Grande', shortName: 'Caf. G/Leche', category: 'Café con Leche', isCoffee: true, currency: 'BS', priceBs: 0, priceUsd: 0 }
         ];
 
         let items = [];
@@ -402,6 +402,10 @@
 
         document.getElementById('report-date').valueAsDate = new Date();
         document.getElementById('report-date').addEventListener('change', updateReport);
+
+        function formatNum(num) {
+            return Number(Math.round(num + "e2") + "e-2");
+        }
 
         function loadItems() {
             const saved = localStorage.getItem('app_items_config');
@@ -435,7 +439,7 @@
                 const data = itemData[item.id] || { qty: 0, note: '' };
                 const activePrice = item.currency === 'USD' ? item.priceUsd : item.priceBs;
                 const symbol = item.currency === 'USD' ? '$' : 'Bs.';
-                const subtotal = data.qty * activePrice;
+                const subtotal = formatNum(data.qty * activePrice);
 
                 const card = document.createElement('div');
                 card.className = 'item-card';
@@ -515,11 +519,11 @@
             let itemsLines = '';
             let hasSales = false;
 
-            // Variables para consolidar cafés
+            // Variables para unificación de cafés
             let coffeeTotalQty = 0;
             let coffeeTotalBs = 0;
             let coffeeTotalUsd = 0;
-            let coffeeNotes = [];
+            let coffeeDetails = [];
 
             items.forEach(item => {
                 const data = itemData[item.id];
@@ -527,7 +531,7 @@
                     hasSales = true;
                     const activePrice = item.currency === 'USD' ? item.priceUsd : item.priceBs;
                     const symbolText = item.currency === 'USD' ? '$' : 'bs';
-                    const subtotal = data.qty * activePrice;
+                    const subtotal = formatNum(data.qty * activePrice);
 
                     if (item.currency === 'USD') {
                         totalUsd += subtotal;
@@ -535,7 +539,6 @@
                         totalBs += subtotal;
                     }
 
-                    // Si es un café, lo agrupamos
                     if (item.isCoffee) {
                         coffeeTotalQty += data.qty;
                         if (item.currency === 'USD') {
@@ -543,11 +546,14 @@
                         } else {
                             coffeeTotalBs += subtotal;
                         }
-                        if (data.note.trim() !== '') {
-                            coffeeNotes.push(`${item.shortName || item.name}: ${data.note.trim()}`);
+                        if (data.qty > 0) {
+                            let coffeeLabel = `${item.shortName || item.name} (${data.qty})`;
+                            if (data.note.trim() !== '') {
+                                coffeeLabel += ` [_${data.note.trim()}_]`;
+                            }
+                            coffeeDetails.push(coffeeLabel);
                         }
                     } else {
-                        // Ítems normales (Bollos, Chilenas, Hallacas, etc.)
                         const displayName = item.shortName || item.name;
                         let line = `• ${displayName} (${data.qty}):`;
                         if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
@@ -557,21 +563,24 @@
                 }
             });
 
-            // Agregar la línea unificada de cafés si hubo ventas
-            if (coffeeTotalQty > 0 || coffeeNotes.length > 0) {
-                let coffeeLine = `• Cafés (${coffeeTotalQty}):`;
+            // Agrupación de cafés unificados
+            if (coffeeTotalQty > 0) {
+                coffeeTotalBs = formatNum(coffeeTotalBs);
+                coffeeTotalUsd = formatNum(coffeeTotalUsd);
+
+                let coffeeLine = `• Cafés (${coffeeDetails.join(', ')}):`;
                 let amounts = [];
                 if (coffeeTotalBs > 0) amounts.push(`${coffeeTotalBs} bs`);
                 if (coffeeTotalUsd > 0) amounts.push(`${coffeeTotalUsd} $`);
-                
+
                 if (amounts.length > 0) {
                     coffeeLine += ` *${amounts.join(' / ')}*`;
                 }
-                if (coffeeNotes.length > 0) {
-                    coffeeLine += ` - _${coffeeNotes.join(', ')}_`;
-                }
                 itemsLines = coffeeLine + '\n' + itemsLines;
             }
+
+            totalBs = formatNum(totalBs);
+            totalUsd = formatNum(totalUsd);
 
             let text = `${dayName} - ${formattedDate}\n\n`;
 
@@ -596,13 +605,13 @@
                 
                 row.innerHTML = `
                     <input type="text" value="${item.name}" placeholder="Nombre Completo" id="cfg-name-${index}">
-                    <input type="text" value="${item.shortName || item.name}" placeholder="Abreviatura" id="cfg-short-${index}" style="width: 100px;">
+                    <input type="text" value="${item.shortName || item.name}" placeholder="Abreviatura" id="cfg-short-${index}" style="width: 110px;">
                     <select id="cfg-curr-${index}" onchange="toggleCurrencyInput(${index})">
                         <option value="BS" ${curr === 'BS' ? 'selected' : ''}>Bs.</option>
                         <option value="USD" ${curr === 'USD' ? 'selected' : ''}>$</option>
                     </select>
-                    <input type="number" value="${item.priceBs || 0}" placeholder="Bs." id="cfg-bs-${index}" ${curr === 'USD' ? 'disabled' : ''}>
-                    <input type="number" value="${item.priceUsd || 0}" placeholder="$" id="cfg-usd-${index}" ${curr === 'BS' ? 'disabled' : ''}>
+                    <input type="number" step="0.01" value="${item.priceBs || 0}" placeholder="Bs." id="cfg-bs-${index}" ${curr === 'USD' ? 'disabled' : ''}>
+                    <input type="number" step="0.01" value="${item.priceUsd || 0}" placeholder="$" id="cfg-usd-${index}" ${curr === 'BS' ? 'disabled' : ''}>
                     <button class="btn-remove" onclick="removeConfigRow(${index})">✕</button>
                 `;
                 list.appendChild(row);
