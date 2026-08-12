@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Ventas</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #22c55e;
+            --wa-color: #25d366;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+
+        header {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .date-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .date-container input {
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .top-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+
+        .btn-config {
+            background: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 15px 0 8px 4px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .item-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .item-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .item-price {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .item-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-counter {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: #f8fafc;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .btn-counter:active {
+            background: #e2e8f0;
+        }
+
+        .input-qty {
+            width: 45px;
+            height: 36px;
+            text-align: center;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .btn-toggle-note {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .note-container {
+            display: none;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .note-container.active {
+            display: block;
+        }
+
+        .note-container input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 550px;
+            max-height: 85vh;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .config-row input[type="text"] {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .config-row input[type="number"] {
+            width: 70px;
+            padding: 6px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .config-row select {
+            padding: 6px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            background: white;
+        }
+
+        .config-row input:disabled {
+            background: #e2e8f0;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-remove {
+            background: #fee2e2;
+            color: var(--danger);
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .report-section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .report-section label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            resize: vertical;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            background: #fafafa;
+        }
+
+        .extra-notes {
+            margin-bottom: 15px;
+        }
+
+        .extra-notes textarea {
+            height: 60px;
+            margin-bottom: 0;
+            background: white;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-copy {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-wa {
+            background: var(--wa-color);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-add {
+            background: #e2e8f0;
+            color: #334155;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-save {
+            background: var(--success);
+            color: white;
+            width: 100%;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Reporte de Ventas</h1>
+        <div class="date-container">
+            <label for="report-date">Fecha:</label>
+            <input type="date" id="report-date">
+        </div>
+    </header>
+
+    <div class="top-actions">
+        <button class="btn-config" onclick="openConfig()">⚙ Configurar Precios e Ítems</button>
+    </div>
+
+    <div id="items-container"></div>
+
+    <div class="report-section">
+        <div class="extra-notes">
+            <label for="custom-notes">Anotaciones Generales:</label>
+            <textarea id="custom-notes" placeholder="Escribe aquí observaciones generales del día..." oninput="updateReport()"></textarea>
+        </div>
+
+        <label for="report-text">Vista Previa del Reporte:</label>
+        <textarea id="report-text" readonly></textarea>
+
+        <div class="action-buttons">
+            <button class="btn btn-copy" id="btn-copy-text" onclick="copyReport()">📋 Copiar</button>
+            <button class="btn btn-wa" onclick="sendWhatsApp()">💬 WhatsApp</button>
+        </div>
+    </div>
+
+    <div class="modal" id="config-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Ítems, Precios y Moneda</h3>
+                <button class="btn-remove" onclick="closeConfig()">✕</button>
+            </div>
+            <div id="config-items-list"></div>
+            <button class="btn btn-add" onclick="addNewItemConfig()">+ Agregar Ítem Especial</button>
+            <button class="btn btn-save" onclick="saveConfig()">Guardar Cambios</button>
+        </div>
+    </div>
+
+    <script>
+        const defaultItems = [
+            { id: 'bollos', name: 'Bollos', shortName: 'Bollos', category: 'General', currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'chilenas', name: 'Chilenas', shortName: 'Chilenas', category: 'General', currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'hallacas', name: 'Hallacas', shortName: 'Hallacas', category: 'General', currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_negro_p', name: 'Café Negro Pequeño', shortName: 'Caf. Neg. Peq.', category: 'Café Negro', currency: 'BS', priceBs: 150, priceUsd: 0 },
+            { id: 'c_negro_m', name: 'Café Negro Mediano', shortName: 'Caf. Neg. Med.', category: 'Café Negro', currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_negro_g', name: 'Café Negro Grande', shortName: 'Caf. Neg. Gde.', category: 'Café Negro', currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_p', name: 'Café con Leche Pequeño', shortName: 'Caf. C/Leche Peq.', category: 'Café con Leche', currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_m', name: 'Café con Leche Mediano', shortName: 'Caf. C/Leche Med.', category: 'Café con Leche', currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_g', name: 'Café con Leche Grande', shortName: 'Caf. C/Leche Gde.', category: 'Café con Leche', currency: 'BS', priceBs: 0, priceUsd: 0 }
+        ];
+
+        let items = [];
+        let itemData = {};
+
+        document.getElementById('report-date').valueAsDate = new Date();
+        document.getElementById('report-date').addEventListener('change', updateReport);
+
+        function loadItems() {
+            const saved = localStorage.getItem('app_items_config');
+            if (saved) {
+                items = JSON.parse(saved);
+            } else {
+                items = JSON.parse(JSON.stringify(defaultItems));
+            }
+            items.forEach(item => {
+                if (!itemData[item.id]) {
+                    itemData[item.id] = { qty: 0, note: '' };
+                }
+            });
+            renderItems();
+        }
+
+        function renderItems() {
+            const container = document.getElementById('items-container');
+            container.innerHTML = '';
+            let currentCategory = '';
+
+            items.forEach(item => {
+                if (item.category && item.category !== currentCategory) {
+                    currentCategory = item.category;
+                    const catHeader = document.createElement('div');
+                    catHeader.className = 'section-title';
+                    catHeader.innerText = currentCategory;
+                    container.appendChild(catHeader);
+                }
+
+                const data = itemData[item.id] || { qty: 0, note: '' };
+                const activePrice = item.currency === 'USD' ? item.priceUsd : item.priceBs;
+                const symbol = item.currency === 'USD' ? '$' : 'Bs.';
+                const subtotal = data.qty * activePrice;
+
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div class="item-main">
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-price">
+                                ${activePrice > 0 ? 'Precio: ' + symbol + ' ' + activePrice : 'Sin precio'}
+                                ${data.qty > 0 && activePrice > 0 ? ' | <span style="color:#22c55e; font-weight:600;">Subtotal: ' + symbol + ' ' + subtotal + '</span>' : ''}
+                            </div>
+                        </div>
+                        <div class="item-controls">
+                            <button class="btn-counter" onclick="changeQty('${item.id}', -1)">-</button>
+                            <input type="number" class="input-qty" value="${data.qty}" min="0" onchange="setQty('${item.id}', this.value)">
+                            <button class="btn-counter" onclick="changeQty('${item.id}', 1)">+</button>
+                            <button class="btn-toggle-note" onclick="toggleNote('${item.id}')">▼</button>
+                        </div>
+                    </div>
+                    <div class="note-container ${data.note ? 'active' : ''}" id="note-wrap-${item.id}">
+                        <input type="text" placeholder="Observación para ${item.name}..." value="${data.note}" oninput="setNote('${item.id}', this.value)">
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            updateReport();
+        }
+
+        function changeQty(id, delta) {
+            if (!itemData[id]) itemData[id] = { qty: 0, note: '' };
+            let newQty = parseInt(itemData[id].qty || 0) + delta;
+            if (newQty < 0) newQty = 0;
+            itemData[id].qty = newQty;
+            renderItems();
+        }
+
+        function setQty(id, val) {
+            if (!itemData[id]) itemData[id] = { qty: 0, note: '' };
+            let newQty = parseInt(val);
+            if (isNaN(newQty) || newQty < 0) newQty = 0;
+            itemData[id].qty = newQty;
+            renderItems();
+        }
+
+        function setNote(id, val) {
+            if (!itemData[id]) itemData[id] = { qty: 0, note: '' };
+            itemData[id].note = val;
+            updateReport();
+        }
+
+        function toggleNote(id) {
+            const wrap = document.getElementById(`note-wrap-${id}`);
+            if (wrap) wrap.classList.toggle('active');
+        }
+
+        function getDayName(dateString) {
+            if (!dateString) return '';
+            const parts = dateString.split('-');
+            const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+            const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            return days[dateObj.getDay()];
+        }
+
+        function updateReport() {
+            const dateVal = document.getElementById('report-date').value;
+            let formattedDate = dateVal;
+            let dayName = '';
+
+            if (dateVal) {
+                const parts = dateVal.split('-');
+                formattedDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                dayName = getDayName(dateVal);
+            }
+
+            let totalBs = 0;
+            let totalUsd = 0;
+            let itemsLines = '';
+            let hasSales = false;
+            let counter = 1;
+
+            items.forEach(item => {
+                const data = itemData[item.id];
+                if (data && (data.qty > 0 || data.note.trim() !== '')) {
+                    hasSales = true;
+                    const activePrice = item.currency === 'USD' ? item.priceUsd : item.priceBs;
+                    const symbolText = item.currency === 'USD' ? '$' : 'bs';
+                    const subtotal = data.qty * activePrice;
+
+                    if (item.currency === 'USD') {
+                        totalUsd += subtotal;
+                    } else {
+                        totalBs += subtotal;
+                    }
+
+                    const numIndex = counter < 10 ? `0${counter}` : counter;
+                    const displayName = item.shortName || item.name;
+
+                    let line = `• ${numIndex} - ${displayName}: ${data.qty}`;
+                    if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
+                    if (data.note.trim() !== '') line += ` - _${data.note.trim()}_`;
+                    itemsLines += line + '\n';
+                    counter++;
+                }
+            });
+
+            let text = `${dayName} - ${formattedDate}\n\n`;
+
+            if (totalBs > 0) text += `*TOTAL BS:* Bs. ${totalBs}\n`;
+            if (totalUsd > 0) text += `*TOTAL USD:* $ ${totalUsd}\n`;
+
+            text += `\n` + (hasSales ? itemsLines : `(No se registraron ventas en los ítems)\n`);
+
+            const generalNotes = document.getElementById('custom-notes').value.trim();
+            if (generalNotes) text += `\n*OBSERVACIONES:*\n${generalNotes}`;
+
+            document.getElementById('report-text').value = text;
+        }
+
+        function openConfig() {
+            const list = document.getElementById('config-items-list');
+            list.innerHTML = '';
+            items.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'config-row';
+                const curr = item.currency || 'BS';
+                
+                row.innerHTML = `
+                    <input type="text" value="${item.name}" placeholder="Nombre Completo" id="cfg-name-${index}">
+                    <input type="text" value="${item.shortName || item.name}" placeholder="Abreviatura" id="cfg-short-${index}" style="width: 100px;">
+                    <select id="cfg-curr-${index}" onchange="toggleCurrencyInput(${index})">
+                        <option value="BS" ${curr === 'BS' ? 'selected' : ''}>Bs.</option>
+                        <option value="USD" ${curr === 'USD' ? 'selected' : ''}>$</option>
+                    </select>
+                    <input type="number" value="${item.priceBs || 0}" placeholder="Bs." id="cfg-bs-${index}" ${curr === 'USD' ? 'disabled' : ''}>
+                    <input type="number" value="${item.priceUsd || 0}" placeholder="$" id="cfg-usd-${index}" ${curr === 'BS' ? 'disabled' : ''}>
+                    <button class="btn-remove" onclick="removeConfigRow(${index})">✕</button>
+                `;
+                list.appendChild(row);
+            });
+            document.getElementById('config-modal').style.display = 'flex';
+        }
+
+        function toggleCurrencyInput(index) {
+            const curr = document.getElementById(`cfg-curr-${index}`).value;
+            const inputBs = document.getElementById(`cfg-bs-${index}`);
+            const inputUsd = document.getElementById(`cfg-usd-${index}`);
+
+            if (curr === 'BS') {
+                inputBs.disabled = false;
+                inputUsd.disabled = true;
+                inputUsd.value = 0;
+            } else {
+                inputBs.disabled = true;
+                inputUsd.disabled = false;
+                inputBs.value = 0;
+            }
+        }
+
+        function closeConfig() { document.getElementById('config-modal').style.display = 'none'; }
+
+        function addNewItemConfig() {
+            items.push({ id: 'custom_' + Date.now(), name: 'Nuevo Ítem', shortName: 'Nuevo', category: 'Especiales', currency: 'BS', priceBs: 0, priceUsd: 0 });
+            openConfig();
+        }
+
+        function removeConfigRow(index) {
+            items.splice(index, 1);
+            openConfig();
+        }
+
+        function saveConfig() {
+            const newItems = [];
+            items.forEach((item, index) => {
+                const nameEl = document.getElementById(`cfg-name-${index}`);
+                const shortEl = document.getElementById(`cfg-short-${index}`);
+                const currEl = document.getElementById(`cfg-curr-${index}`);
+                const bsEl = document.getElementById(`cfg-bs-${index}`);
+                const usdEl = document.getElementById(`cfg-usd-${index}`);
+
+                if (nameEl && currEl) {
+                    const selectedCurr = currEl.value;
+                    newItems.push({
+                        ...item,
+                        name: nameEl.value.trim() || 'Sin Nombre',
+                        shortName: shortEl ? shortEl.value.trim() : nameEl.value.trim(),
+                        currency: selectedCurr,
+                        priceBs: selectedCurr === 'BS' ? (parseFloat(bsEl.value) || 0) : 0,
+                        priceUsd: selectedCurr === 'USD' ? (parseFloat(usdEl.value) || 0) : 0
+                    });
+                }
+            });
+            items = newItems;
+            localStorage.setItem('app_items_config', JSON.stringify(items));
+            closeConfig();
+            renderItems();
+        }
+
+        function copyReport() {
+            const area = document.getElementById('report-text');
+            area.select();
+            document.execCommand('copy');
+            const btn = document.getElementById('btn-copy-text');
+            const originalText = btn.innerText;
+            btn.innerText = '¡Copiado! ✓';
+            setTimeout(() => btn.innerText = originalText, 2000);
+        }
+
+        function sendWhatsApp() {
+            const text = document.getElementById('report-text').value;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        loadItems();
+    </script>
+</body>
+</html>
