@@ -195,7 +195,7 @@
             background: white;
             border-radius: 12px;
             width: 100%;
-            max-width: 650px;
+            max-width: 600px;
             max-height: 85vh;
             overflow-y: auto;
             padding: 20px;
@@ -242,22 +242,22 @@
             padding: 6px;
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
         }
 
         .config-row input[type="number"] {
-            width: 70px;
+            width: 75px;
             padding: 6px;
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
         }
 
         .config-row select {
             padding: 6px;
             border: 1px solid var(--border);
             border-radius: 6px;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             background: white;
         }
 
@@ -424,15 +424,15 @@
 
     <script>
         const defaultItems = [
-            { id: 'bollos', name: 'Bollos', shortName: 'Bollos', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 650, priceUsd: 0 },
-            { id: 'chilenas', name: 'Chilenas', shortName: 'Chilenas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 850, priceUsd: 0 },
-            { id: 'hallacas', name: 'Hallacas', shortName: 'Hallacas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_negro_p', name: 'Café Negro Pequeño', shortName: 'Caf. P/Negro', category: 'Café Negro', isCoffee: true, active: true, currency: 'BS', priceBs: 150, priceUsd: 0 },
-            { id: 'c_negro_m', name: 'Café Negro Mediano', shortName: 'Caf. M/Negro', category: 'Café Negro', isCoffee: true, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_negro_g', name: 'Café Negro Grande', shortName: 'Caf. G/Negro', category: 'Café Negro', isCoffee: true, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
-            { id: 'c_leche_p', name: 'Café con Leche Pequeño', shortName: 'Caf. P/Leche', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 2.5 },
-            { id: 'c_leche_m', name: 'Café con Leche Mediano', shortName: 'Caf. M/Leche', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 1.5 },
-            { id: 'c_leche_g', name: 'Café con Leche Grande', shortName: 'Caf. G/Leche', category: 'Café con Leche', isCoffee: true, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 }
+            { id: 'bollos', name: 'Bollos', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 650, priceUsd: 0 },
+            { id: 'chilenas', name: 'Chilenas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 850, priceUsd: 0 },
+            { id: 'hallacas', name: 'Hallacas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_negro_p', name: 'Café Negro Pequeño', category: 'Café Negro', isCoffee: true, active: true, currency: 'BS', priceBs: 150, priceUsd: 0 },
+            { id: 'c_negro_m', name: 'Café Negro Mediano', category: 'Café Negro', isCoffee: true, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_negro_g', name: 'Café Negro Grande', category: 'Café Negro', isCoffee: true, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
+            { id: 'c_leche_p', name: 'Café con Leche Pequeño', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 2.5 },
+            { id: 'c_leche_m', name: 'Café con Leche Mediano', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 1.5 },
+            { id: 'c_leche_g', name: 'Café con Leche Grande', category: 'Café con Leche', isCoffee: true, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 }
         ];
 
         let items = [];
@@ -597,11 +597,10 @@
                             coffeeTotalBs += subtotal;
                         }
                         if (data.note.trim() !== '') {
-                            coffeeNotes.push(`${item.shortName || item.name}: _${data.note.trim()}_`);
+                            coffeeNotes.push(`${item.name}: _${data.note.trim()}_`);
                         }
                     } else {
-                        const displayName = item.shortName || item.name;
-                        let line = `• ${displayName} (${data.qty}):`;
+                        let line = `• ${item.name} (${data.qty}):`;
                         if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
                         if (data.note.trim() !== '') line += ` - _${data.note.trim()}_`;
                         itemsLines += line + '\n';
@@ -654,14 +653,10 @@
                 
                 row.innerHTML = `
                     <div class="input-group">
-                        <label>Nombre Pantalla</label>
-                        <input type="text" value="${item.name}" placeholder="Ej: Bollos" id="cfg-name-${index}">
+                        <label>Nombre del Producto</label>
+                        <input type="text" value="${item.name}" placeholder="Nombre del Producto" id="cfg-name-${index}">
                     </div>
-                    <div class="input-group">
-                        <label>Abrev. WhatsApp</label>
-                        <input type="text" value="${item.shortName || item.name}" placeholder="Ej: Bollos" id="cfg-short-${index}">
-                    </div>
-                    <div class="input-group" style="flex:0; min-width:60px;">
+                    <div class="input-group" style="flex:0; min-width:65px;">
                         <label>Moneda</label>
                         <select id="cfg-curr-${index}" onchange="toggleCurrencyInput(${index})">
                             <option value="BS" ${curr === 'BS' ? 'selected' : ''}>Bs.</option>
@@ -709,7 +704,7 @@
         function closeConfig() { document.getElementById('config-modal').style.display = 'none'; }
 
         function addNewItemConfig() {
-            items.push({ id: 'custom_' + Date.now(), name: 'Nuevo Ítem', shortName: 'Nuevo', category: 'Especiales', isCoffee: false, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 });
+            items.push({ id: 'custom_' + Date.now(), name: 'Nuevo Ítem', category: 'Especiales', isCoffee: false, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 });
             openConfig();
         }
 
@@ -717,7 +712,6 @@
             const newItems = [];
             items.forEach((item, index) => {
                 const nameEl = document.getElementById(`cfg-name-${index}`);
-                const shortEl = document.getElementById(`cfg-short-${index}`);
                 const currEl = document.getElementById(`cfg-curr-${index}`);
                 const bsEl = document.getElementById(`cfg-bs-${index}`);
                 const usdEl = document.getElementById(`cfg-usd-${index}`);
@@ -730,7 +724,6 @@
                     newItems.push({
                         ...item,
                         name: nameVal,
-                        shortName: shortEl ? shortEl.value.trim() : nameVal,
                         isCoffee: isCoffee,
                         currency: selectedCurr,
                         priceBs: selectedCurr === 'BS' ? (parseFloat(bsEl.value) || 0) : 0,
