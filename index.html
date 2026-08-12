@@ -210,7 +210,7 @@
 
         .config-row {
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             gap: 6px;
             margin-bottom: 10px;
             background: #f8fafc;
@@ -224,8 +224,21 @@
             background: #f1f5f9;
         }
 
-        .config-row input[type="text"] {
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
             flex: 1;
+        }
+
+        .input-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
+        .config-row input[type="text"] {
+            width: 100%;
             padding: 6px;
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -261,6 +274,7 @@
             font-size: 0.75rem;
             font-weight: 600;
             min-width: 70px;
+            height: 31px;
         }
 
         .btn-status.active {
@@ -459,7 +473,6 @@
             let currentCategory = '';
 
             items.forEach(item => {
-                // Solo se renderizan en pantalla los ítems marcados como ACTIVOS
                 if (item.active === false) return;
 
                 if (item.category && item.category !== currentCategory) {
@@ -559,7 +572,7 @@
             let coffeeNotes = [];
 
             items.forEach(item => {
-                if (item.active === false) return; // Se omiten del reporte los inactivos
+                if (item.active === false) return;
 
                 const data = itemData[item.id];
                 if (data && (data.qty > 0 || data.note.trim() !== '')) {
@@ -640,14 +653,29 @@
                 const curr = item.currency || 'BS';
                 
                 row.innerHTML = `
-                    <input type="text" value="${item.name}" placeholder="Nombre Completo" id="cfg-name-${index}">
-                    <input type="text" value="${item.shortName || item.name}" placeholder="Abreviatura" id="cfg-short-${index}">
-                    <select id="cfg-curr-${index}" onchange="toggleCurrencyInput(${index})">
-                        <option value="BS" ${curr === 'BS' ? 'selected' : ''}>Bs.</option>
-                        <option value="USD" ${curr === 'USD' ? 'selected' : ''}>$</option>
-                    </select>
-                    <input type="number" step="0.01" value="${item.priceBs || 0}" placeholder="Bs." id="cfg-bs-${index}" ${curr === 'USD' ? 'disabled' : ''}>
-                    <input type="number" step="0.01" value="${item.priceUsd || 0}" placeholder="$" id="cfg-usd-${index}" ${curr === 'BS' ? 'disabled' : ''}>
+                    <div class="input-group">
+                        <label>Nombre Pantalla</label>
+                        <input type="text" value="${item.name}" placeholder="Ej: Bollos" id="cfg-name-${index}">
+                    </div>
+                    <div class="input-group">
+                        <label>Abrev. WhatsApp</label>
+                        <input type="text" value="${item.shortName || item.name}" placeholder="Ej: Bollos" id="cfg-short-${index}">
+                    </div>
+                    <div class="input-group" style="flex:0; min-width:60px;">
+                        <label>Moneda</label>
+                        <select id="cfg-curr-${index}" onchange="toggleCurrencyInput(${index})">
+                            <option value="BS" ${curr === 'BS' ? 'selected' : ''}>Bs.</option>
+                            <option value="USD" ${curr === 'USD' ? 'selected' : ''}>$</option>
+                        </select>
+                    </div>
+                    <div class="input-group" style="flex:0;">
+                        <label>Precio Bs.</label>
+                        <input type="number" step="0.01" value="${item.priceBs || 0}" placeholder="Bs." id="cfg-bs-${index}" ${curr === 'USD' ? 'disabled' : ''}>
+                    </div>
+                    <div class="input-group" style="flex:0;">
+                        <label>Precio $</label>
+                        <input type="number" step="0.01" value="${item.priceUsd || 0}" placeholder="$" id="cfg-usd-${index}" ${curr === 'BS' ? 'disabled' : ''}>
+                    </div>
                     <button class="btn-status ${isActive ? 'active' : 'inactive'}" id="btn-toggle-${index}" onclick="toggleItemStatus(${index})">
                         ${isActive ? 'Activo' : 'Inactivo'}
                     </button>
