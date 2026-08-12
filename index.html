@@ -7,20 +7,18 @@
     
     <!-- =================================================================
          SECCIÓN 1: ESTILOS VISUALES (CSS)
-         Aquí puedes cambiar colores, tamaños de botones y tipografía.
     ================================================================== -->
     <style>
         :root {
-            /* COLORES PRINCIPALES DE LA APLICACIÓN */
-            --bg-color: #f4f6f8;       /* Fondo general de la página */
-            --card-bg: #ffffff;        /* Fondo de las tarjetas e ítems */
-            --text-color: #333333;     /* Color del texto principal */
-            --primary: #2563eb;        /* Color del botón Copiar (Azul) */
-            --primary-hover: #1d4ed8;  /* Azul oscuro al presionar */
-            --success: #22c55e;        /* Color verde para subtotales y botón guardar */
-            --wa-color: #25d366;       /* Color verde oficial de WhatsApp */
-            --danger: #ef4444;         /* Color rojo para elementos inactivos/cerrar */
-            --border: #e2e8f0;         /* Color de los bordes suaves */
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #22c55e;
+            --wa-color: #25d366;
+            --danger: #ef4444;
+            --border: #e2e8f0;
         }
 
         * {
@@ -186,6 +184,78 @@
             font-size: 0.85rem;
         }
 
+        /* ESTILOS DE LA NAVEGACIÓN EN 2 COLUMNAS PARA CAFÉ */
+        .coffee-block-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .coffee-grid {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .coffee-col {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding: 0 4px;
+        }
+
+        .coffee-col:first-child {
+            border-right: 1px dashed var(--border);
+            padding-right: 8px;
+        }
+
+        .coffee-col:last-child {
+            padding-left: 8px;
+        }
+
+        .coffee-col-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #334155;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 6px;
+        }
+
+        .coffee-item-mini {
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px dotted var(--border);
+        }
+
+        .coffee-item-mini:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .coffee-item-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .coffee-item-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .coffee-item-sub {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* MODAL CONFIGURACIÓN */
         .modal {
             display: none;
             position: fixed;
@@ -389,10 +459,8 @@
 
     <!-- =================================================================
          SECCIÓN 2: ESTRUCTURA VISUAL DE LA PÁGINA (HTML)
-         Textos editables de la interfaz principal.
     ================================================================== -->
     <header>
-        <!-- Título principal superior -->
         <h1>Reporte de Ventas</h1>
         <div class="date-container">
             <label for="report-date">Fecha:</label>
@@ -401,17 +469,14 @@
     </header>
 
     <div class="top-actions">
-        <!-- Texto del botón que abre la configuración -->
         <button class="btn-config" onclick="openConfig()">⚙ Configurar Precios e Ítems</button>
     </div>
 
-    <!-- Contenedor donde se dibuja la lista de productos automáticamente -->
     <div id="items-container"></div>
 
     <div class="report-section">
         <div class="extra-notes">
             <label for="custom-notes">Anotaciones Generales:</label>
-            <!-- Texto placeholder de la caja de observaciones -->
             <textarea id="custom-notes" placeholder="Escribe aquí observaciones generales del día..." oninput="updateReport()"></textarea>
         </div>
 
@@ -419,13 +484,12 @@
         <textarea id="report-text" readonly></textarea>
 
         <div class="action-buttons">
-            <!-- Botones finales de acción -->
             <button class="btn btn-copy" id="btn-copy-text" onclick="copyReport()">📋 Copiar</button>
             <button class="btn btn-wa" onclick="sendWhatsApp()">💬 WhatsApp</button>
         </div>
     </div>
 
-    <!-- Modal emergente para la configuración -->
+    <!-- Modal emergente para configuración -->
     <div class="modal" id="config-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -440,62 +504,39 @@
 
     <!-- =================================================================
          SECCIÓN 3: LÓGICA Y DATOS (JAVASCRIPT)
-         Aquí están los precios por defecto y la programación del sistema.
     ================================================================== -->
     <script>
-        /* 
-           -----------------------------------------------------------------
-           >>> DATO TÉCNICO EDITABLE: LISTA DE PRODUCTOS POR DEFECTO <<<
-           Si en algún momento deseas reiniciar la app o cambiar los precios
-           iniciales fijos directamente en el código, modifica este bloque:
-           
-           Propiedades por ítem:
-           - id: Identificador interno único (no usar espacios ni tildes).
-           - name: Nombre visible en la pantalla.
-           - category: Título de la sección a la que pertenece.
-           - isCoffee: 'true' para agruparse en la línea de cafés, 'false' para productos independientes.
-           - active: 'true' para mostrar en pantalla, 'false' para ocultar por defecto.
-           - currency: 'USD' para Dólares, 'BS' para Bolívares.
-           - priceBs: Precio en Bolívares.
-           - priceUsd: Precio en Dólares.
-           -----------------------------------------------------------------
-        */
         const defaultItems = [
             { id: 'bollos', name: 'Bollos', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 650, priceUsd: 0 },
             { id: 'chilenas', name: 'Chilenas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 850, priceUsd: 0 },
             { id: 'hallacas', name: 'Hallacas', category: 'General', isCoffee: false, active: true, currency: 'BS', priceBs: 0, priceUsd: 0 },
             
-            /* PRECIOS DE CAFÉ NEGRO (PREDETERMINADOS EN USD) */
-            { id: 'c_negro_p', name: 'Café Negro Pequeño', category: 'Café Negro', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 0.50 },
-            { id: 'c_negro_m', name: 'Café Negro Mediano', category: 'Café Negro', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 1.50 },
-            { id: 'c_negro_g', name: 'Café Negro Grande', category: 'Café Negro', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 2.00 },
+            /* DERECHA / IZQUIERDA DE LA TARJETA CAFÉ */
+            { id: 'c_negro_p', name: 'Negro Pequeño', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 0.50 },
+            { id: 'c_negro_m', name: 'Negro Mediano', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 1.50 },
+            { id: 'c_negro_g', name: 'Negro Grande', category: 'Café Negro', isCoffee: true, coffeeType: 'negro', active: true, currency: 'USD', priceBs: 0, priceUsd: 2.00 },
             
-            /* PRECIOS DE CAFÉ CON LECHE (PREDETERMINADOS EN USD) */
-            { id: 'c_leche_p', name: 'Café con Leche Pequeño', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 0.75 },
-            { id: 'c_leche_m', name: 'Café con Leche Mediano', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 1.75 },
-            { id: 'c_leche_g', name: 'Café con Leche Grande', category: 'Café con Leche', isCoffee: true, active: true, currency: 'USD', priceBs: 0, priceUsd: 2.70 }
+            { id: 'c_leche_p', name: 'Con Leche Pequeño', category: 'Café con Leche', isCoffee: true, coffeeType: 'leche', active: true, currency: 'USD', priceBs: 0, priceUsd: 0.75 },
+            { id: 'c_leche_m', name: 'Con Leche Mediano', category: 'Café con Leche', isCoffee: true, coffeeType: 'leche', active: true, currency: 'USD', priceBs: 0, priceUsd: 1.75 },
+            { id: 'c_leche_g', name: 'Con Leche Grande', category: 'Café con Leche', isCoffee: true, coffeeType: 'leche', active: true, currency: 'USD', priceBs: 0, priceUsd: 2.70 }
         ];
 
         let items = [];
         let itemData = {};
 
-        // Asignación de fecha actual por defecto
         document.getElementById('report-date').valueAsDate = new Date();
         document.getElementById('report-date').addEventListener('change', updateReport);
 
-        // Función matemática para garantizar máximo 2 decimales limpios
         function formatNum(num) {
             return Number(Math.round(num + "e2") + "e-2");
         }
 
-        // Verificación de categoría/tipo de café para la unificación del reporte
         function checkIsCoffee(item) {
             if (item.isCoffee) return true;
             const str = (item.id + " " + item.name + " " + (item.category || "")).toLowerCase();
             return str.includes('caf') || str.includes('coffee');
         }
 
-        // Cargar ítems desde el almacenamiento del navegador (localStorage)
         function loadItems() {
             const saved = localStorage.getItem('app_items_config');
             if (saved) {
@@ -512,56 +553,122 @@
             renderItems();
         }
 
-        // Renderizado visual de los productos en la pantalla
         function renderItems() {
             const container = document.getElementById('items-container');
             container.innerHTML = '';
-            let currentCategory = '';
+            
+            let generalItems = items.filter(i => !checkIsCoffee(i) && i.active !== false);
+            let coffeeItems = items.filter(i => checkIsCoffee(i) && i.active !== false);
 
-            items.forEach(item => {
-                if (item.active === false) return; // Si está inactivo, no se muestra
+            // 1. Renderizar Productos Generales
+            if (generalItems.length > 0) {
+                const catHeader = document.createElement('div');
+                catHeader.className = 'section-title';
+                catHeader.innerText = 'General';
+                container.appendChild(catHeader);
 
-                if (item.category && item.category !== currentCategory) {
-                    currentCategory = item.category;
-                    const catHeader = document.createElement('div');
-                    catHeader.className = 'section-title';
-                    catHeader.innerText = currentCategory;
-                    container.appendChild(catHeader);
-                }
+                generalItems.forEach(item => {
+                    const data = itemData[item.id] || { qty: 0, note: '' };
+                    const activePrice = item.currency === 'USD' ? item.priceUsd : item.priceBs;
+                    const symbol = item.currency === 'USD' ? '$' : 'Bs.';
+                    const subtotal = formatNum(data.qty * activePrice);
 
-                const data = itemData[item.id] || { qty: 0, note: '' };
-                const activePrice = item.currency === 'USD' ? item.priceUsd : item.priceBs;
-                const symbol = item.currency === 'USD' ? '$' : 'Bs.';
-                const subtotal = formatNum(data.qty * activePrice);
-
-                const card = document.createElement('div');
-                card.className = 'item-card';
-                card.innerHTML = `
-                    <div class="item-main">
-                        <div class="item-info">
-                            <div class="item-name">${item.name}</div>
-                            <div class="item-price">
-                                ${activePrice > 0 ? 'Precio: ' + symbol + ' ' + activePrice : 'Sin precio'}
-                                ${data.qty > 0 && activePrice > 0 ? ' | <span style="color:#22c55e; font-weight:600;">Subtotal: ' + symbol + ' ' + subtotal + '</span>' : ''}
+                    const card = document.createElement('div');
+                    card.className = 'item-card';
+                    card.innerHTML = `
+                        <div class="item-main">
+                            <div class="item-info">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-price">
+                                    ${activePrice > 0 ? 'Precio: ' + symbol + ' ' + activePrice : 'Sin precio'}
+                                    ${data.qty > 0 && activePrice > 0 ? ' | <span style="color:#22c55e; font-weight:600;">Subtotal: ' + symbol + ' ' + subtotal + '</span>' : ''}
+                                </div>
+                            </div>
+                            <div class="item-controls">
+                                <button class="btn-counter" onclick="changeQty('${item.id}', -1)">-</button>
+                                <input type="number" class="input-qty" value="${data.qty}" min="0" onchange="setQty('${item.id}', this.value)">
+                                <button class="btn-counter" onclick="changeQty('${item.id}', 1)">+</button>
+                                <button class="btn-toggle-note" onclick="toggleNote('${item.id}')">▼</button>
                             </div>
                         </div>
-                        <div class="item-controls">
-                            <button class="btn-counter" onclick="changeQty('${item.id}', -1)">-</button>
-                            <input type="number" class="input-qty" value="${data.qty}" min="0" onchange="setQty('${item.id}', this.value)">
-                            <button class="btn-counter" onclick="changeQty('${item.id}', 1)">+</button>
-                            <button class="btn-toggle-note" onclick="toggleNote('${item.id}')">▼</button>
+                        <div class="note-container ${data.note ? 'active' : ''}" id="note-wrap-${item.id}">
+                            <input type="text" placeholder="Observación para ${item.name}..." value="${data.note}" oninput="setNote('${item.id}', this.value)">
                         </div>
-                    </div>
-                    <div class="note-container ${data.note ? 'active' : ''}" id="note-wrap-${item.id}">
-                        <input type="text" placeholder="Observación para ${item.name}..." value="${data.note}" oninput="setNote('${item.id}', this.value)">
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            // 2. Renderizar Bloque Único en 2 Columnas para Cafés
+            if (coffeeItems.length > 0) {
+                const catHeader = document.createElement('div');
+                catHeader.className = 'section-title';
+                catHeader.innerText = 'Café';
+                container.appendChild(catHeader);
+
+                const coffeeBlock = document.createElement('div');
+                coffeeBlock.className = 'coffee-block-container';
+
+                let negroItems = coffeeItems.filter(i => i.coffeeType === 'negro' || i.name.toLowerCase().includes('negro') || i.category.toLowerCase().includes('negro'));
+                let lecheItems = coffeeItems.filter(i => i.coffeeType === 'leche' || i.name.toLowerCase().includes('leche') || i.category.toLowerCase().includes('leche'));
+                
+                // Si la clasificación automática falla, dividir los cafés por la mitad
+                if (negroItems.length === 0 && lecheItems.length === 0) {
+                    const half = Math.ceil(coffeeItems.length / 2);
+                    negroItems = coffeeItems.slice(0, half);
+                    lecheItems = coffeeItems.slice(half);
+                }
+
+                function renderCoffeeCol(title, colItems) {
+                    let html = `<div class="coffee-col"><div class="coffee-col-title">${title}</div>`;
+                    colItems.forEach(item => {
+                        const data = itemData[item.id] || { qty: 0, note: '' };
+                        const activePrice = item.currency === 'USD' ? item.priceUsd : item.priceBs;
+                        const symbol = item.currency === 'USD' ? '$' : 'Bs.';
+                        const subtotal = formatNum(data.qty * activePrice);
+
+                        // Limpiar la etiqueta visual
+                        let label = item.name.replace(/Café/gi, '').replace(/con Leche/gi, 'C/Leche').trim();
+
+                        html += `
+                            <div class="coffee-item-mini">
+                                <div class="coffee-item-head">
+                                    <div>
+                                        <div class="coffee-item-title">${label}</div>
+                                        <div class="coffee-item-sub">
+                                            ${activePrice > 0 ? symbol + activePrice : ''}
+                                            ${data.qty > 0 && activePrice > 0 ? ' <b style="color:#22c55e;">(' + symbol + subtotal + ')</b>' : ''}
+                                        </div>
+                                    </div>
+                                    <button class="btn-toggle-note" onclick="toggleNote('${item.id}')">▼</button>
+                                </div>
+                                <div class="item-controls" style="justify-content: space-between; margin-top: 4px;">
+                                    <button class="btn-counter" onclick="changeQty('${item.id}', -1)">-</button>
+                                    <input type="number" class="input-qty" value="${data.qty}" min="0" onchange="setQty('${item.id}', this.value)">
+                                    <button class="btn-counter" onclick="changeQty('${item.id}', 1)">+</button>
+                                </div>
+                                <div class="note-container ${data.note ? 'active' : ''}" id="note-wrap-${item.id}">
+                                    <input type="text" placeholder="Nota..." value="${data.note}" oninput="setNote('${item.id}', this.value)">
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                    return html;
+                }
+
+                let gridHtml = `<div class="coffee-grid">`;
+                gridHtml += renderCoffeeCol('Negro', negroItems);
+                gridHtml += renderCoffeeCol('Con Leche', lecheItems);
+                gridHtml += `</div>`;
+
+                coffeeBlock.innerHTML = gridHtml;
+                container.appendChild(coffeeBlock);
+            }
+
             updateReport();
         }
 
-        // Funciones de control de cantidades y notas
         function changeQty(id, delta) {
             if (!itemData[id]) itemData[id] = { qty: 0, note: '' };
             let newQty = parseInt(itemData[id].qty || 0) + delta;
@@ -589,7 +696,6 @@
             if (wrap) wrap.classList.toggle('active');
         }
 
-        // Obtener el día de la semana correspondiente a la fecha seleccionada
         function getDayName(dateString) {
             if (!dateString) return '';
             const parts = dateString.split('-');
@@ -598,13 +704,6 @@
             return days[dateObj.getDay()];
         }
 
-        /* 
-           -----------------------------------------------------------------
-           >>> ESTRUCTURA DEL TEXTO DE SALIDA PARA WHATSAPP <<<
-           Aquí se le da forma al texto copiable. Si deseas cambiar cómo
-           se formatean los encabezados, edita esta función.
-           -----------------------------------------------------------------
-        */
         function updateReport() {
             const dateVal = document.getElementById('report-date').value;
             let formattedDate = dateVal;
@@ -655,7 +754,6 @@
                             coffeeNotes.push(`${item.name}: _${data.note.trim()}_`);
                         }
                     } else {
-                        // Productos normales (Bollos, Chilenas, Hallacas, etc.)
                         let line = `• ${item.name} (${data.qty}):`;
                         if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
                         if (data.note.trim() !== '') line += ` - _${data.note.trim()}_`;
@@ -664,7 +762,6 @@
                 }
             });
 
-            // Agrupación de la línea unificada de cafés
             if (coffeeTotalQty > 0) {
                 coffeeTotalBs = formatNum(coffeeTotalBs);
                 coffeeTotalUsd = formatNum(coffeeTotalUsd);
@@ -699,7 +796,6 @@
             document.getElementById('report-text').value = text;
         }
 
-        // Panel emergente de configuración de precios
         function openConfig() {
             const list = document.getElementById('config-items-list');
             list.innerHTML = '';
@@ -795,7 +891,6 @@
             renderItems();
         }
 
-        // Copiar texto formateado al portapapeles
         function copyReport() {
             const area = document.getElementById('report-text');
             area.select();
@@ -806,13 +901,11 @@
             setTimeout(() => btn.innerText = originalText, 2000);
         }
 
-        // Abrir app de WhatsApp para compartir
         function sendWhatsApp() {
             const text = document.getElementById('report-text').value;
             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        // Iniciar la aplicación
         loadItems();
     </script>
 </body>
