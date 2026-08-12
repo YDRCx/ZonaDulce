@@ -533,7 +533,7 @@
                     const numIndex = counter < 10 ? `0${counter}` : counter;
                     const displayName = item.shortName || item.name;
 
-                    let line = `• ${numIndex} - ${displayName}: ${data.qty}`;
+                    let line = `• ${numIndex} - ${displayName}: *${data.qty}*`;
                     if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
                     if (data.note.trim() !== '') line += ` - _${data.note.trim()}_`;
                     itemsLines += line + '\n';
