@@ -778,12 +778,13 @@
         }
 
         /* 
+          /* 
            -----------------------------------------------------------------
            [CONEXIÓN TÉCNICA 4: GENERACIÓN DEL TEXTO FINAL WHATSAPP]
-           - Se eliminaron las filas acumuladas (*TOTAL BS:*, *TOTAL USD:*).
-           - Inicia directamente con el Día y la Fecha.
-           - Unifica automáticamente todos los cafés en un único renglón:
-             • Cafés (Total Unidades): *Monto $ / Monto Bs* - _Observación_
+           - Cabecera entre asteriscos para negrilla (*Día - Fecha*).
+           - Formato invertido: (Cantidad) Nombre del Producto.
+           - Las notas se generan en un renglón inferior con espacio extra
+             para no amontonarse en WhatsApp.
            -----------------------------------------------------------------
         */
         function updateReport() {
@@ -825,9 +826,14 @@
                         }
                     } else {
                         // Productos normales (Bollos, Chilenas, Hallacas, etc.)
-                        let line = `• ${item.name} (${data.qty}):`;
+                        // Formato: • (Cantidad) Nombre: *Monto*
+                        let line = `• (${data.qty}) ${item.name}:`;
                         if (subtotal > 0) line += ` *${subtotal} ${symbolText}*`;
-                        if (data.note.trim() !== '') line += ` - _${data.note.trim()}_`;
+                        
+                        // Si hay nota, salta de línea y agrega un espacio de separación
+                        if (data.note.trim() !== '') {
+                            line += `\n _${data.note.trim()}_\n`;
+                        }
                         itemsLines += line + '\n';
                     }
                 }
@@ -839,7 +845,8 @@
                 coffeeTotalBs = formatNum(coffeeTotalBs);
                 coffeeTotalUsd = formatNum(coffeeTotalUsd);
 
-                let coffeeLine = `• Cafés (${coffeeTotalQty}):`;
+                // Formato: • (Cantidad) Cafés: *Monto*
+                let coffeeLine = `• (${coffeeTotalQty}) Cafés:`;
                 let amounts = [];
                 if (coffeeTotalBs > 0) amounts.push(`${coffeeTotalBs} bs`);
                 if (coffeeTotalUsd > 0) amounts.push(`${coffeeTotalUsd} $`);
@@ -847,18 +854,20 @@
                 if (amounts.length > 0) {
                     coffeeLine += ` *${amounts.join(' / ')}*`;
                 }
+                
+                // Si la caja de café tiene nota global, salta de línea
                 if (coffeeGlobalNote.trim() !== '') {
-                    coffeeLine += ` - _${coffeeGlobalNote.trim()}_`;
+                    coffeeLine += `\n _${coffeeGlobalNote.trim()}_\n`;
                 }
                 itemsLines = coffeeLine + '\n' + itemsLines;
             }
 
-            // Construcción del mensaje sin filas de Totales
-            let text = `${dayName} - ${formattedDate}\n\n`;
-            text += (hasSales ? itemsLines : `(No se registraron ventas en los ítems)\n`);
+            // Encabezado con fecha entre asteriscos para negrilla en WhatsApp
+            let text = `*${dayName} - ${formattedDate}*\n\n`;
+            text += (hasSales ? itemsLines.trim() : `(No se registraron ventas en los ítems)`);
 
             const generalNotes = document.getElementById('custom-notes').value.trim();
-            if (generalNotes) text += `\n*OBSERVACIONES:*\n${generalNotes}`;
+            if (generalNotes) text += `\n\n*OBSERVACIONES:*\n${generalNotes}`;
 
             document.getElementById('report-text').value = text;
         }
